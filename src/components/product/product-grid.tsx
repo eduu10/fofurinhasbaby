@@ -1,8 +1,25 @@
 import { cn } from "@/lib/utils";
 import { ProductCard, type ProductCardData } from "./product-card";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapProduct(p: any): ProductCardData {
+  return {
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    price: Number(p.price),
+    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    image: p.images?.[0]?.url || "/placeholder.png",
+    category: p.category?.name || null,
+    stock: p.stock,
+    minQuantity: p.minQuantity ?? 1,
+    maxQuantity: p.maxQuantity ?? 99,
+  };
+}
+
 interface ProductGridProps {
-  products: ProductCardData[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  products: any[];
   className?: string;
 }
 
@@ -43,7 +60,7 @@ export function ProductGrid({ products, className }: ProductGridProps) {
       )}
     >
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard key={product.id} product={mapProduct(product)} />
       ))}
     </div>
   );

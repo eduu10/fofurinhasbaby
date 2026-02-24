@@ -65,23 +65,31 @@ export default async function ProductsPage({ searchParams }: Props) {
       break;
   }
 
-  const [products, total, categories] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: {
-        images: { orderBy: { sortOrder: "asc" } },
-        category: true,
-      },
-      orderBy,
-      skip,
-      take: limit,
-    }),
-    prisma.product.count({ where }),
-    prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  let products: Awaited<ReturnType<typeof prisma.product.findMany>> = [];
+  let total = 0;
+  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
+
+  try {
+    [products, total, categories] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          images: { orderBy: { sortOrder: "asc" } },
+          category: true,
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+      prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+      }),
+    ]);
+  } catch {
+    // Database not available
+  }
 
   const totalPages = Math.ceil(total / limit);
 
@@ -104,7 +112,7 @@ export default async function ProductsPage({ searchParams }: Props) {
         <div className="flex-1">
           {products.length > 0 ? (
             <>
-              <ProductGrid products={products as never[]} />
+              <ProductGrid products={products} />
               {totalPages > 1 && (
                 <div className="mt-8">
                   <Pagination
