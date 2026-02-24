@@ -11,7 +11,6 @@ import {
   User,
   Menu,
   X,
-  Heart,
   LogOut,
   ChevronDown,
   LayoutDashboard,
@@ -20,7 +19,7 @@ import {
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Produtos" },
-  { href: "/categories", label: "Categorias" },
+  { href: "/products?sort=sales", label: "Mais Vendidos" },
 ];
 
 export function Header() {
@@ -105,15 +104,6 @@ export function Header() {
             >
               <Search className="h-5 w-5" />
             </button>
-
-            {/* Wishlist */}
-            <Link
-              href="/wishlist"
-              className="hidden rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-100 sm:inline-flex"
-              aria-label="Lista de desejos"
-            >
-              <Heart className="h-5 w-5" />
-            </Link>
 
             {/* Cart */}
             <Link
@@ -246,14 +236,6 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/wishlist"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink-50 hover:text-pink-600 sm:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Heart className="h-4 w-4" />
-              Lista de Desejos
-            </Link>
           </nav>
         </div>
       )}

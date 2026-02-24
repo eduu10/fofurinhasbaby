@@ -11,9 +11,9 @@ const aboutLinks = [
 
 const quickLinks = [
   { href: "/products", label: "Produtos" },
-  { href: "/categories", label: "Categorias" },
-  { href: "/offers", label: "Ofertas" },
-  { href: "/new-arrivals", label: "Novidades" },
+  { href: "/products?sort=sales", label: "Mais Vendidos" },
+  { href: "/products?sort=newest", label: "Novidades" },
+  { href: "/cart", label: "Carrinho" },
   { href: "/account", label: "Minha Conta" },
 ];
 
