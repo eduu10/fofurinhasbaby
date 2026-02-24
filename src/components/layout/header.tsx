@@ -45,16 +45,16 @@ export function Header() {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-baby-blue text-white py-2 text-center text-sm font-bold tracking-wide">
-        <span className="inline-flex items-center gap-2">
-          <Sparkles size={14} /> FRETE GRATIS PARA TODO O BRASIL <Sparkles size={14} />
+      <div className="bg-baby-blue text-white py-2 text-center text-xs sm:text-sm font-bold tracking-wide px-4">
+        <span className="inline-flex items-center gap-1 sm:gap-2">
+          <Sparkles size={14} className="flex-shrink-0 hidden sm:block" /> FRETE GRATIS PARA TODO O BRASIL <Sparkles size={14} className="flex-shrink-0 hidden sm:block" />
         </span>
       </div>
 
       {/* Main Header */}
       <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md shadow-sm border-b border-baby-pink/20">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -66,10 +66,10 @@ export function Header() {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner">
-                <Star fill="currentColor" size={20} />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
+                <Star fill="currentColor" size={16} className="sm:w-5 sm:h-5" />
               </div>
-              <span className="font-display text-2xl font-bold text-gradient-pink">
+              <span className="font-display text-lg sm:text-2xl font-bold text-gradient-pink whitespace-nowrap">
                 Fofurinhas Baby
               </span>
             </Link>
@@ -108,7 +108,7 @@ export function Header() {
             </form>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-4 text-gray-600">
+            <div className="flex items-center gap-2 sm:gap-4 text-gray-600 flex-shrink-0">
               {/* Mobile search toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
@@ -141,7 +141,7 @@ export function Header() {
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-bold uppercase">Carrinho</span>
+                <span className="hidden sm:block text-[10px] font-bold uppercase">Carrinho</span>
               </Link>
 
               {/* User menu */}
