@@ -42,7 +42,10 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch(`/api/admin/orders?${params}`);
       const json = await res.json();
-      if (json.success) setOrders(json.data.orders || []);
+      if (json.success) {
+          const list = Array.isArray(json.data) ? json.data : json.data?.orders || [];
+          setOrders(list);
+        }
     } finally {
       setLoading(false);
     }
