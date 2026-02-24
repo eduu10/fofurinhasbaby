@@ -1,0 +1,26 @@
+import { prisma } from "@/lib/prisma";
+import { successResponse, errorResponse } from "@/lib/api";
+
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        isFeatured: true,
+        isActive: true,
+        isDraft: false,
+      },
+      take: 8,
+      orderBy: { createdAt: "desc" },
+      include: {
+        images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        category: { select: { id: true, name: true, slug: true } },
+        variations: true,
+      },
+    });
+
+    return successResponse(products);
+  } catch (error) {
+    console.error("Featured products error:", error);
+    return errorResponse("Erro ao buscar produtos em destaque", 500);
+  }
+}
