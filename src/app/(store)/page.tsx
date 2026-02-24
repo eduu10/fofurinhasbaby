@@ -65,13 +65,53 @@ async function getCategories() {
   }
 }
 
+async function getHeroSettings() {
+  try {
+    const settings = await prisma.storeSetting.findMany({
+      where: {
+        key: {
+          in: [
+            "heroBadge",
+            "heroTitle1",
+            "heroTitle2",
+            "heroDescription",
+            "heroCta1",
+            "heroCta2",
+            "heroImage",
+            "heroTestimonial",
+            "heroTestimonialAuthor",
+          ],
+        },
+      },
+    });
+    const map: Record<string, string> = {};
+    settings.forEach((s) => {
+      map[s.key] = s.value;
+    });
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 export default async function HomePage() {
-  const [featured, bestsellers, offers, categories] = await Promise.all([
+  const [featured, bestsellers, offers, categories, heroSettings] = await Promise.all([
     getFeaturedProducts(),
     getBestsellers(),
     getOffers(),
     getCategories(),
+    getHeroSettings(),
   ]);
+
+  const heroBadge = heroSettings.heroBadge || "\u2728 Novidade Magica";
+  const heroTitle1 = heroSettings.heroTitle1 || "Sonhos Doces &";
+  const heroTitle2 = heroSettings.heroTitle2 || "Noites Tranquilas";
+  const heroDescription = heroSettings.heroDescription || "Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.";
+  const heroCta1 = heroSettings.heroCta1 || "VER OFERTAS";
+  const heroCta2 = heroSettings.heroCta2 || "MAIS VENDIDOS";
+  const heroImage = heroSettings.heroImage || "https://images.unsplash.com/photo-1515488042361-ee0065ab4d8b?auto=format&fit=crop&q=80&w=800";
+  const heroTestimonial = heroSettings.heroTestimonial || "Meu bebe dormiu em 5 minutos!";
+  const heroTestimonialAuthor = heroSettings.heroTestimonialAuthor || "Mamae Julia";
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] overflow-x-hidden">
@@ -89,28 +129,28 @@ export default async function HomePage() {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2 space-y-6 text-center lg:text-left z-10">
               <div className="inline-block bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full text-accent-orange font-bold text-sm shadow-sm border border-orange-100 animate-fade-in-up">
-                &#10024; Novidade Magica
+                {heroBadge}
               </div>
               <h1 className="font-display text-5xl lg:text-7xl font-bold text-gray-800 leading-[0.9] animate-fade-in-up">
-                Sonhos <span className="text-baby-blue">Doces</span> &{" "}
+                <span className="text-baby-blue">{heroTitle1}</span>
                 <br />
-                Noites <span className="text-baby-pink">Tranquilas</span>
+                <span className="text-baby-pink">{heroTitle2}</span>
               </h1>
               <p className="text-lg text-gray-600 max-w-lg mx-auto lg:mx-0 font-medium animate-fade-in-up">
-                Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.
+                {heroDescription}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up">
                 <Link
                   href="/products"
                   className="bg-accent-orange text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-105 transition-all active:scale-95 text-center"
                 >
-                  VER OFERTAS
+                  {heroCta1}
                 </Link>
                 <Link
                   href="/products?sort=sales"
                   className="bg-white text-gray-700 font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-md hover:bg-gray-50 transition-all border-2 border-gray-100 text-center"
                 >
-                  MAIS VENDIDOS
+                  {heroCta2}
                 </Link>
               </div>
             </div>
@@ -118,7 +158,7 @@ export default async function HomePage() {
             <div className="lg:w-1/2 relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-baby-blue/30 to-baby-pink/30 rounded-full blur-3xl transform scale-90" />
               <img
-                src="https://images.unsplash.com/photo-1515488042361-ee0065ab4d8b?auto=format&fit=crop&q=80&w=800"
+                src={heroImage}
                 alt="Bebe feliz"
                 className="relative z-10 rounded-[3rem] shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500 w-full max-w-md mx-auto"
               />
@@ -132,8 +172,8 @@ export default async function HomePage() {
                   <Star fill="currentColor" size={16} />
                   <Star fill="currentColor" size={16} />
                 </div>
-                <p className="text-xs font-bold text-gray-600 leading-tight">&quot;Meu bebe dormiu em 5 minutos!&quot;</p>
-                <p className="text-[10px] text-gray-400 mt-1">- Mamae Julia</p>
+                <p className="text-xs font-bold text-gray-600 leading-tight">&quot;{heroTestimonial}&quot;</p>
+                <p className="text-[10px] text-gray-400 mt-1">- {heroTestimonialAuthor}</p>
               </div>
             </div>
           </div>

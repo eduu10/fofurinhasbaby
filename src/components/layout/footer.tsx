@@ -15,7 +15,21 @@ const categoryLinks = [
   { href: "/cart", label: "Carrinho" },
 ];
 
-export function Footer() {
+interface FooterProps {
+  storeName?: string;
+  contactEmail?: string;
+  contactWhatsapp?: string;
+  contactWhatsappDisplay?: string;
+  contactHours?: string;
+}
+
+export function Footer({
+  storeName,
+  contactEmail,
+  contactWhatsapp,
+  contactWhatsappDisplay,
+  contactHours,
+}: FooterProps) {
   return (
     <footer className="bg-white pt-16 pb-8 border-t border-gray-100">
       <div className="container mx-auto px-4">
@@ -27,7 +41,7 @@ export function Footer() {
                 <Star fill="currentColor" size={16} />
               </div>
               <span className="font-display text-xl font-bold text-gray-800">
-                Fofurinhas Baby
+                {storeName || "Fofurinhas Baby"}
               </span>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed">
@@ -71,35 +85,35 @@ export function Footer() {
                 <span className="font-medium text-gray-700">Email:</span>
                 <br />
                 <a
-                  href="mailto:contato@fofurinhasbaby.com.br"
+                  href={`mailto:${contactEmail || "contato@fofurinhasbaby.com.br"}`}
                   className="transition-colors hover:text-baby-pink"
                 >
-                  contato@fofurinhasbaby.com.br
+                  {contactEmail || "contato@fofurinhasbaby.com.br"}
                 </a>
               </li>
               <li>
                 <span className="font-medium text-gray-700">WhatsApp:</span>
                 <br />
                 <a
-                  href="https://wa.me/5511999999999"
+                  href={`https://wa.me/${contactWhatsapp || "5511999999999"}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-colors hover:text-baby-pink"
                 >
-                  (11) 99999-9999
+                  {contactWhatsappDisplay || "(11) 99999-9999"}
                 </a>
               </li>
               <li>
                 <span className="font-medium text-gray-700">Horario:</span>
                 <br />
-                Seg a Sex, 9h as 18h
+                {contactHours || "Seg a Sex, 9h as 18h"}
               </li>
             </ul>
           </div>
         </div>
 
         <div className="text-center pt-8 border-t border-gray-100 text-sm text-gray-400 font-medium">
-          &copy; {new Date().getFullYear()} Fofurinhas Baby. Todos os direitos reservados. Feito com &#128150; para seu bebe.
+          &copy; {new Date().getFullYear()} {storeName || "Fofurinhas Baby"}. Todos os direitos reservados. Feito com &#128150; para seu bebe.
         </div>
       </div>
     </footer>

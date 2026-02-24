@@ -24,7 +24,12 @@ const navLinks = [
   { href: "/products?sort=sales", label: "Mais Vendidos" },
 ];
 
-export function Header() {
+interface HeaderProps {
+  topBarText?: string;
+  searchPlaceholder?: string;
+}
+
+export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -47,7 +52,7 @@ export function Header() {
       {/* Top Bar */}
       <div className="bg-baby-blue text-white py-2 text-center text-xs sm:text-sm font-bold tracking-wide px-4">
         <span className="inline-flex items-center gap-1 sm:gap-2">
-          <Sparkles size={14} className="flex-shrink-0 hidden sm:block" /> FRETE GRATIS PARA TODO O BRASIL <Sparkles size={14} className="flex-shrink-0 hidden sm:block" />
+          <Sparkles size={14} className="flex-shrink-0 hidden sm:block" /> {topBarText || "FRETE GRATIS PARA TODO O BRASIL"} <Sparkles size={14} className="flex-shrink-0 hidden sm:block" />
         </span>
       </div>
 
@@ -96,7 +101,7 @@ export function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="O que seu bebe precisa hoje?"
+                placeholder={searchPlaceholder || "O que seu bebe precisa hoje?"}
                 className="w-full pl-4 pr-12 py-3 rounded-full border-2 border-baby-blue/30 focus:border-baby-blue focus:outline-none bg-gray-50 text-gray-600 placeholder-gray-400 font-medium transition-all"
               />
               <button
