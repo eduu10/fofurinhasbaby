@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Save, Store, Layout, ImageIcon, Phone, Truck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Save, Store, Layout, ImageIcon, Phone, Truck, Upload, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const tabs = [
@@ -79,6 +79,136 @@ function TextareaField({ label, value, onChange, hint, rows = 3 }: {
         rows={rows}
         className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 resize-none"
       />
+      {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
+    </div>
+  );
+}
+
+function ImageUploadField({ label, value, onChange, hint }: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  hint?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (json.success) {
+        onChange(json.url);
+        toast.success("Imagem enviada!");
+      } else {
+        toast.error(json.error || "Erro no upload");
+      }
+    } catch {
+      toast.error("Erro ao enviar imagem");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) handleFile(file);
+  }
+
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+
+      {/* Preview + upload area */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        className={`relative rounded-xl border-2 border-dashed p-4 text-center transition ${
+          dragOver ? "border-pink-400 bg-pink-50" : "border-gray-300 bg-gray-50"
+        }`}
+      >
+        {value ? (
+          <div className="relative">
+            <img
+              src={value}
+              alt="Preview"
+              className="mx-auto h-32 rounded-lg object-contain"
+            />
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white shadow hover:bg-red-600"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="py-4">
+            {uploading ? (
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-pink-500" />
+            ) : (
+              <>
+                <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                <p className="mt-2 text-sm text-gray-500">
+                  Arraste uma imagem ou{" "}
+                  <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    className="font-semibold text-pink-600 hover:text-pink-700"
+                  >
+                    clique para selecionar
+                  </button>
+                </p>
+                <p className="mt-1 text-xs text-gray-400">JPG, PNG, WebP ou GIF (max 5MB)</p>
+              </>
+            )}
+          </div>
+        )}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleInputChange}
+          className="hidden"
+        />
+      </div>
+
+      {/* URL manual input */}
+      <div className="mt-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Ou cole a URL da imagem aqui..."
+          className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200"
+        />
+      </div>
+
+      {value && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="mt-2 flex items-center gap-1.5 text-xs font-medium text-pink-600 hover:text-pink-700 disabled:opacity-50"
+        >
+          <Upload className="h-3 w-3" />
+          Trocar imagem
+        </button>
+      )}
+
       {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
     </div>
   );
@@ -168,7 +298,7 @@ export default function AdminSettingsPage() {
             <h2 className="mb-4 text-lg font-semibold text-gray-800">Informacoes da Loja</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <InputField label="Nome da Loja" value={settings.storeName} onChange={(v) => update("storeName", v)} />
-              <InputField label="URL do Logo" value={settings.storeLogo} onChange={(v) => update("storeLogo", v)} placeholder="https://..." />
+              <ImageUploadField label="Logo da Loja" value={settings.storeLogo} onChange={(v) => update("storeLogo", v)} hint="Logo exibido no header do site" />
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Cor Primaria</label>
                 <div className="flex gap-2">
@@ -233,11 +363,10 @@ export default function AdminSettingsPage() {
                 onChange={(v) => update("heroBadge", v)}
                 hint='Ex: ✨ Novidade Magica'
               />
-              <InputField
-                label="URL da imagem hero"
+              <ImageUploadField
+                label="Imagem do banner"
                 value={settings.heroImage}
                 onChange={(v) => update("heroImage", v)}
-                placeholder="https://..."
                 hint="Imagem principal do banner"
               />
               <InputField
@@ -283,16 +412,6 @@ export default function AdminSettingsPage() {
               />
             </div>
 
-            {settings.heroImage && (
-              <div className="mt-6 rounded-xl border border-gray-200 p-4">
-                <p className="mb-2 text-xs font-medium text-gray-500 uppercase">Preview da imagem</p>
-                <img
-                  src={settings.heroImage}
-                  alt="Hero preview"
-                  className="h-40 w-full rounded-lg object-cover"
-                />
-              </div>
-            )}
           </div>
         )}
 
