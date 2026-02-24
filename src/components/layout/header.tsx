@@ -150,23 +150,7 @@ export function Header() {
                           {user.email}
                         </p>
                       </div>
-                      <Link
-                        href="/account"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="h-4 w-4" />
-                        Minha Conta
-                      </Link>
-                      <Link
-                        href="/account/orders"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        Meus Pedidos
-                      </Link>
-                      {user.role === "ADMIN" && (
+                      {user.role === "ADMIN" ? (
                         <Link
                           href="/admin"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -175,6 +159,25 @@ export function Header() {
                           <LayoutDashboard className="h-4 w-4" />
                           Painel Admin
                         </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/account"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <User className="h-4 w-4" />
+                            Minha Conta
+                          </Link>
+                          <Link
+                            href="/account/orders"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <ShoppingCart className="h-4 w-4" />
+                            Meus Pedidos
+                          </Link>
+                        </>
                       )}
                       <div className="border-t border-gray-100">
                         <button

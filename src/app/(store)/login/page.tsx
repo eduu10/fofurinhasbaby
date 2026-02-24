@@ -29,7 +29,8 @@ function LoginForm() {
       if (json.success) {
         setAuth(json.data.user, json.data.token);
         toast.success("Login realizado com sucesso!");
-        router.push(redirect);
+        const dest = json.data.user.role === "ADMIN" ? "/admin" : redirect;
+        router.push(dest);
       } else {
         toast.error(json.error || "Credenciais inválidas");
       }
