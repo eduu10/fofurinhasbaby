@@ -1,18 +1,23 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #db2777;
-  --color-primary-dark: #be185d;
+  --color-primary: #ec4899;
+  --color-primary-dark: #db2777;
   --color-primary-light: #f9a8d4;
   --color-secondary: #fce7f3;
   --color-accent: #f59e0b;
+  --color-pastel-pink: #f9a8d4;
+  --color-pastel-blue: #93c5fd;
+  --color-pastel-lilac: #c4b5fd;
+  --color-pastel-yellow: #fde68a;
+  --color-pastel-peach: #fed7aa;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  background: #fafafa;
+  background: #fdf2f8;
   color: #1f2937;
 }
 
@@ -21,14 +26,77 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #fdf2f8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #db2777;
+  background: linear-gradient(180deg, #f9a8d4, #c4b5fd);
   border-radius: 4px;
 }
 
-/* Animations */
+/* === Gradient Utilities === */
+
+.text-gradient-pink {
+  background: linear-gradient(135deg, #ec4899, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-pastel {
+  background: linear-gradient(135deg, #fce7f3, #ede9fe, #dbeafe);
+}
+
+.bg-gradient-pastel-hero {
+  background: linear-gradient(135deg, #f9a8d4 0%, #c4b5fd 50%, #93c5fd 100%);
+}
+
+.bg-gradient-button {
+  background: linear-gradient(135deg, #ec4899, #a78bfa);
+}
+.bg-gradient-button:hover {
+  background: linear-gradient(135deg, #db2777, #8b5cf6);
+}
+
+.bg-gradient-offer {
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
+}
+
+/* === Shadow Utilities === */
+
+.shadow-pink-glow {
+  box-shadow: 0 4px 14px -3px rgba(236, 72, 153, 0.3);
+}
+
+.shadow-pastel {
+  box-shadow: 0 4px 20px -4px rgba(196, 181, 253, 0.25), 0 2px 8px -2px rgba(249, 168, 212, 0.2);
+}
+
+/* === Decorative Elements === */
+
+.decor-sparkles {
+  position: relative;
+}
+.decor-sparkles::before {
+  content: "\2728";
+  position: absolute;
+  font-size: 1.5rem;
+  top: 1rem;
+  right: 2rem;
+  animation: float 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.decor-sparkles::after {
+  content: "\1F495";
+  position: absolute;
+  font-size: 1.25rem;
+  bottom: 4rem;
+  left: 3rem;
+  animation: float 3s ease-in-out infinite 1.5s;
+  pointer-events: none;
+}
+
+/* === Animations === */
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -45,4 +113,22 @@ body {
 
 .animate-slide-up {
   animation: slideUp 0.4s ease-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.05); }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
 }

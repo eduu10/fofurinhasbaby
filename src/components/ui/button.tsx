@@ -13,21 +13,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   default:
-    "bg-pink-600 text-white hover:bg-pink-700 focus:ring-pink-500 shadow-sm",
+    "bg-gradient-button text-white hover:shadow-pink-glow focus:ring-pink-400 shadow-sm",
   secondary:
     "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400",
   outline:
-    "border border-pink-600 text-pink-600 bg-transparent hover:bg-pink-50 focus:ring-pink-500",
+    "border-2 border-pink-400 text-pink-500 bg-transparent hover:bg-pink-50 focus:ring-pink-400",
   ghost:
-    "text-gray-700 bg-transparent hover:bg-gray-100 focus:ring-gray-400",
+    "text-gray-700 bg-transparent hover:bg-pink-50 focus:ring-gray-400",
   destructive:
-    "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm",
+    "bg-red-500 text-white hover:bg-red-600 focus:ring-red-400 shadow-sm",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm rounded-md",
-  md: "px-4 py-2 text-sm rounded-lg",
-  lg: "px-6 py-3 text-base rounded-lg",
+  sm: "px-3 py-1.5 text-sm rounded-lg",
+  md: "px-5 py-2.5 text-sm rounded-xl",
+  lg: "px-8 py-3 text-base rounded-full",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(

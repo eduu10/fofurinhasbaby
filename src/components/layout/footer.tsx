@@ -19,7 +19,7 @@ const quickLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
+    <footer className="border-t border-pink-100 bg-gradient-pastel">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* About */}
@@ -36,7 +36,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-pink-600"
+                    className="text-sm text-gray-600 transition-colors hover:text-pink-500"
                   >
                     {link.label}
                   </Link>
@@ -55,7 +55,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-pink-600"
+                    className="text-sm text-gray-600 transition-colors hover:text-pink-500"
                   >
                     {link.label}
                   </Link>
@@ -75,7 +75,7 @@ export function Footer() {
                 <br />
                 <a
                   href="mailto:contato@fofurinhasbaby.com.br"
-                  className="transition-colors hover:text-pink-600"
+                  className="transition-colors hover:text-pink-500"
                 >
                   contato@fofurinhasbaby.com.br
                 </a>
@@ -87,7 +87,7 @@ export function Footer() {
                   href="https://wa.me/5511999999999"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-colors hover:text-pink-600"
+                  className="transition-colors hover:text-pink-500"
                 >
                   (11) 99999-9999
                 </a>
@@ -110,7 +110,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-pink-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
                 aria-label="Instagram"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-pink-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
                 aria-label="Facebook"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -132,7 +132,7 @@ export function Footer() {
                 href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-pink-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
                 aria-label="TikTok"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -148,11 +148,11 @@ export function Footer() {
                 <input
                   type="email"
                   placeholder="Seu e-mail"
-                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+                  className="flex-1 rounded-full border border-pink-200 bg-white px-4 py-2 text-sm placeholder:text-gray-400 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-700"
+                  className="rounded-full bg-gradient-button px-5 py-2 text-sm font-bold text-white transition-all hover:shadow-pink-glow"
                 >
                   Assinar
                 </button>
@@ -163,7 +163,7 @@ export function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-gray-200 bg-gray-100">
+      <div className="border-t border-pink-200/50 bg-white/30">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <p className="flex items-center justify-center gap-1 text-center text-xs text-gray-500">
             &copy; {new Date().getFullYear()} Fofurinhas Baby. Todos os

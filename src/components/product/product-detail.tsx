@@ -119,8 +119,8 @@ export function ProductDetail({ product, relatedProducts }: Props) {
               </div>
             )}
             {product.compareAtPrice && (
-              <span className="absolute left-4 top-4 rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white">
-                OFERTA
+              <span className="absolute left-4 top-4 rounded-full bg-gradient-offer px-4 py-1.5 text-sm font-bold text-white shadow-sm animate-pulse-soft">
+                SUPER OFERTA!
               </span>
             )}
             {product.images.length > 1 && (
@@ -149,7 +149,7 @@ export function ProductDetail({ product, relatedProducts }: Props) {
                   key={img.id}
                   onClick={() => setSelectedImage(i)}
                   className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                    selectedImage === i ? "border-pink-600" : "border-transparent"
+                    selectedImage === i ? "border-pink-400 shadow-pink-glow" : "border-transparent"
                   }`}
                 >
                   <img src={img.url} alt={img.alt || ""} className="h-full w-full object-cover" />
@@ -162,7 +162,7 @@ export function ProductDetail({ product, relatedProducts }: Props) {
         {/* Product Info */}
         <div>
           {product.category && (
-            <p className="mb-2 text-sm font-medium text-pink-600">
+            <p className="mb-2 text-sm font-medium text-pink-500">
               {product.category.name}
             </p>
           )}
@@ -195,7 +195,7 @@ export function ProductDetail({ product, relatedProducts }: Props) {
                 {formatCurrency(product.compareAtPrice)}
               </p>
             )}
-            <p className="text-3xl font-bold text-pink-600">
+            <p className="text-3xl font-extrabold text-gradient-pink">
               {formatCurrency(currentPrice)}
             </p>
             <p className="mt-1 text-sm text-gray-500">
@@ -218,8 +218,8 @@ export function ProductDetail({ product, relatedProducts }: Props) {
                     onClick={() => setSelectedVariation(v)}
                     className={`rounded-xl border-2 px-4 py-2 text-sm transition ${
                       selectedVariation?.id === v.id
-                        ? "border-pink-600 bg-pink-50 text-pink-600"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                        ? "border-pink-400 bg-pink-50 text-pink-600"
+                        : "border-pink-100 text-gray-700 hover:border-pink-300"
                     } ${v.stock <= 0 ? "opacity-50" : ""}`}
                     disabled={v.stock <= 0}
                   >
@@ -236,14 +236,14 @@ export function ProductDetail({ product, relatedProducts }: Props) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantity(Math.max(product.minQuantity, quantity - 1))}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 hover:bg-gray-50"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-pink-200 hover:bg-pink-50"
               >
                 <Minus className="h-4 w-4" />
               </button>
               <span className="w-12 text-center text-lg font-medium">{quantity}</span>
               <button
                 onClick={() => setQuantity(Math.min(product.maxQuantity, quantity + 1))}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 hover:bg-gray-50"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-pink-200 hover:bg-pink-50"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -263,17 +263,17 @@ export function ProductDetail({ product, relatedProducts }: Props) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className="mt-6 flex w-full items-center justify-center gap-3 rounded-full bg-pink-600 py-4 text-base font-semibold text-white transition hover:bg-pink-700 disabled:opacity-50"
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-full bg-gradient-button py-4 text-base font-bold text-white transition-all hover:shadow-pink-glow hover:scale-[1.02] disabled:opacity-50"
           >
             <ShoppingCart className="h-5 w-5" />
-            {isOutOfStock ? "Esgotado" : "Adicionar ao Carrinho"}
+            {isOutOfStock ? "Esgotado" : "Adicionar ao Carrinho ✨"}
           </button>
         </div>
       </div>
 
       {/* Description */}
       {product.description && (
-        <div className="mt-12 rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mt-12 rounded-2xl border border-pink-50 bg-white p-8 shadow-sm">
           <h2 className="mb-4 text-xl font-bold text-gray-800">Descrição</h2>
           <div className="prose max-w-none text-gray-600 whitespace-pre-line">
             {product.description}
@@ -283,7 +283,7 @@ export function ProductDetail({ product, relatedProducts }: Props) {
 
       {/* Reviews */}
       {product.reviews.length > 0 && (
-        <div className="mt-12 rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mt-12 rounded-2xl border border-pink-50 bg-white p-8 shadow-sm">
           <h2 className="mb-6 text-xl font-bold text-gray-800">
             Avaliações ({product.reviews.length})
           </h2>
@@ -321,7 +321,7 @@ export function ProductDetail({ product, relatedProducts }: Props) {
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="mt-12">
-          <h2 className="mb-6 text-xl font-bold text-gray-800">Produtos Relacionados</h2>
+          <h2 className="mb-6 text-xl font-bold text-gradient-pink">Produtos Relacionados</h2>
           <ProductGrid products={relatedProducts as never[]} />
         </div>
       )}

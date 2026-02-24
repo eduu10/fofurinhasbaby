@@ -58,7 +58,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition-all duration-300 hover:shadow-pastel hover:-translate-y-1",
         className
       )}
     >
@@ -77,10 +77,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
         />
         {hasDiscount && (
           <Badge
-            variant="danger"
+            variant="offer"
             className="absolute left-2 top-2 z-10"
           >
-            Oferta
+            OFERTA
           </Badge>
         )}
         {product.stock <= 0 && (
@@ -96,7 +96,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         {/* Category */}
         {product.category && (
-          <span className="mb-1 text-xs font-medium uppercase tracking-wider text-pink-600">
+          <span className="mb-1 text-xs font-medium uppercase tracking-wider text-pink-500">
             {product.category}
           </span>
         )}
@@ -111,7 +111,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
         {/* Price */}
         <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-lg font-bold text-gray-900">
+          <span className="text-lg font-bold text-pink-600">
             {formatCurrency(product.price)}
           </span>
           {hasDiscount && (

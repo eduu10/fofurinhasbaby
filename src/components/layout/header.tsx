@@ -41,7 +41,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-40 w-full border-b border-pink-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Mobile menu button */}
@@ -59,7 +59,7 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <span className="text-xl font-bold text-pink-600 sm:text-2xl">
+            <span className="text-xl font-extrabold sm:text-2xl text-gradient-pink">
               Fofurinhas Baby
             </span>
           </Link>
@@ -89,7 +89,7 @@ export function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar produtos..."
-                className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-pink-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+                className="w-full rounded-full border border-pink-100 bg-pink-50/50 py-2 pl-10 pr-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-pink-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400/20"
               />
             </div>
           </form>
@@ -99,7 +99,7 @@ export function Header() {
             {/* Mobile search toggle */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+              className="rounded-md p-2 text-gray-600 hover:bg-pink-50 lg:hidden"
               aria-label="Buscar"
             >
               <Search className="h-5 w-5" />
@@ -113,7 +113,7 @@ export function Header() {
             >
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-pink-600 text-[10px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-offer text-[10px] font-bold text-white">
                   {itemCount > 99 ? "99+" : itemCount}
                 </span>
               )}
@@ -126,7 +126,7 @@ export function Header() {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100"
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-100 text-xs font-semibold text-pink-600">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-pastel text-xs font-semibold text-pink-600">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden max-w-[100px] truncate sm:inline">
