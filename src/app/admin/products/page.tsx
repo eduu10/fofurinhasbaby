@@ -38,7 +38,7 @@ export default function AdminProductsPage() {
     try {
       const res = await fetch(`/api/admin/products?${params}`);
       const json = await res.json();
-      if (json.success) setProducts(json.data);
+      if (json.success) setProducts(json.data.products || []);
     } finally {
       setLoading(false);
     }

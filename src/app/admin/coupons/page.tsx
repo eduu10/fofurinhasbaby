@@ -38,7 +38,7 @@ export default function AdminCouponsPage() {
     try {
       const res = await fetch("/api/admin/coupons");
       const json = await res.json();
-      if (json.success) setCoupons(json.data);
+      if (json.success) setCoupons(json.data.coupons || []);
     } finally { setLoading(false); }
   }
 

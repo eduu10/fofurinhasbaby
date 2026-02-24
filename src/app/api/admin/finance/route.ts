@@ -115,6 +115,33 @@ export async function GET(request: NextRequest) {
       },
     };
 
+    // Dashboard extras
+    const [totalProducts, pendingOrders, recentOrders] = await Promise.all([
+      prisma.product.count(),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          total: true,
+          createdAt: true,
+          user: { select: { name: true } },
+        },
+      }),
+    ]);
+
+    Object.assign(report, {
+      totalProducts,
+      pendingOrders,
+      recentOrders: recentOrders.map((o) => ({
+        ...o,
+        total: Number(o.total).toString(),
+      })),
+    });
+
     // CSV export
     if (acceptHeader.includes("text/csv")) {
       const csvLines = [
