@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export interface ProductCardData {
   id: string;
@@ -58,31 +56,31 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition-all duration-300 hover:shadow-pastel hover:-translate-y-1",
+        "bg-white rounded-3xl overflow-hidden shadow-lg border-2 border-baby-blue/20 hover:border-baby-blue/50 transition-all duration-300 hover:-translate-y-2 relative flex flex-col h-full group",
         className
       )}
     >
-      {/* Image container */}
+      {/* Badge */}
+      {hasDiscount && (
+        <div className="absolute top-4 left-0 bg-gradient-offer text-white font-display font-bold py-1 px-4 rounded-r-full shadow-md z-10 text-sm transform -rotate-2">
+          OFERTA
+        </div>
+      )}
+
+      {/* Image Container */}
       <Link
         href={`/products/${product.slug}`}
-        className="relative aspect-square overflow-hidden bg-gray-100"
+        className="relative h-64 overflow-hidden bg-gray-100"
       >
         <Image
           src={product.image}
           alt={product.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
           unoptimized
         />
-        {hasDiscount && (
-          <Badge
-            variant="offer"
-            className="absolute left-2 top-2 z-10"
-          >
-            OFERTA
-          </Badge>
-        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         {product.stock <= 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
             <span className="rounded-full bg-white px-3 py-1 text-sm font-medium text-gray-800">
@@ -93,10 +91,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
       </Link>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
+      <div className="p-5 flex-1 flex flex-col">
         {/* Category */}
         {product.category && (
-          <span className="mb-1 text-xs font-medium uppercase tracking-wider text-pink-500">
+          <span className="mb-1 text-xs font-bold uppercase tracking-wider text-baby-blue">
             {product.category}
           </span>
         )}
@@ -104,33 +102,45 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Title */}
         <Link
           href={`/products/${product.slug}`}
-          className="mb-2 line-clamp-2 text-sm font-medium text-gray-800 transition-colors hover:text-pink-600"
+          className="mb-2"
         >
-          {product.title}
+          <h3 className="font-display text-lg font-bold text-gray-800 leading-tight line-clamp-2">
+            {product.title}
+          </h3>
         </Link>
 
-        {/* Price */}
-        <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-lg font-bold text-pink-600">
-            {formatCurrency(product.price)}
-          </span>
-          {hasDiscount && (
-            <span className="text-sm text-gray-400 line-through">
-              {formatCurrency(product.compareAtPrice!)}
-            </span>
-          )}
+        {/* Rating */}
+        <div className="flex items-center gap-1 mb-3">
+          <div className="flex text-accent-yellow">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
+            ))}
+          </div>
+          <span className="text-xs text-gray-500 font-bold">(4.8)</span>
         </div>
 
-        {/* Add to cart button */}
-        <Button
-          size="sm"
-          className="mt-3 w-full"
-          onClick={handleAddToCart}
-          disabled={product.stock <= 0}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {product.stock <= 0 ? "Esgotado" : "Adicionar"}
-        </Button>
+        {/* Price & Action */}
+        <div className="mt-auto pt-4 border-t border-gray-100">
+          <div className="flex items-end gap-2 mb-3">
+            {hasDiscount && (
+              <span className="text-gray-400 text-sm line-through font-bold">
+                {formatCurrency(product.compareAtPrice!)}
+              </span>
+            )}
+            <span className="text-2xl font-display font-bold text-accent-orange">
+              {formatCurrency(product.price)}
+            </span>
+          </div>
+
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock <= 0}
+            className="w-full bg-gradient-buy text-white font-display font-bold text-lg py-3 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ShoppingCart size={20} strokeWidth={3} />
+            {product.stock <= 0 ? "ESGOTADO" : "COMPRAR AGORA"}
+          </button>
+        </div>
       </div>
     </div>
   );

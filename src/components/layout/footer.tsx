@@ -1,43 +1,47 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Star } from "lucide-react";
 
-const aboutLinks = [
-  { href: "/about", label: "Sobre Nos" },
-  { href: "/terms", label: "Termos de Uso" },
-  { href: "/privacy", label: "Politica de Privacidade" },
-  { href: "/shipping-policy", label: "Politica de Envio" },
+const helpLinks = [
+  { href: "/about", label: "Central de Atendimento" },
+  { href: "/account/orders", label: "Acompanhar Pedido" },
   { href: "/returns", label: "Trocas e Devoluções" },
+  { href: "/privacy", label: "Política de Privacidade" },
 ];
 
-const quickLinks = [
-  { href: "/products", label: "Produtos" },
+const categoryLinks = [
+  { href: "/products", label: "Todos os Produtos" },
   { href: "/products?sort=sales", label: "Mais Vendidos" },
   { href: "/products?sort=newest", label: "Novidades" },
   { href: "/cart", label: "Carrinho" },
-  { href: "/account", label: "Minha Conta" },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-pink-100 bg-gradient-pastel">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {/* About */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-800">
-              Sobre
-            </h3>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              A Fofurinhas Baby oferece produtos de qualidade para bebes e
-              crianças, com carinho e cuidado especial para os pequenos.
+    <footer className="bg-white pt-16 pb-8 border-t border-gray-100">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white">
+                <Star fill="currentColor" size={16} />
+              </div>
+              <span className="font-display text-xl font-bold text-gray-800">
+                Fofurinhas Baby
+              </span>
+            </div>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Trazendo magia e conforto para o dia a dia do seu bebe. Produtos selecionados com amor e carinho.
             </p>
-            <ul className="space-y-2">
-              {aboutLinks.map((link) => (
+          </div>
+
+          {/* Help */}
+          <div>
+            <h4 className="font-display font-bold text-gray-800 mb-4">Ajuda</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
+              {helpLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-pink-500"
-                  >
+                  <Link href={link.href} className="hover:text-baby-pink transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -45,18 +49,13 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Quick Links */}
+          {/* Categories */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-800">
-              Links
-            </h3>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
+            <h4 className="font-display font-bold text-gray-800 mb-4">Categorias</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
+              {categoryLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-pink-500"
-                  >
+                  <Link href={link.href} className="hover:text-baby-pink transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -64,18 +63,16 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Payment */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-800">
-              Contato
-            </h3>
-            <ul className="space-y-3 text-sm text-gray-600">
+            <h4 className="font-display font-bold text-gray-800 mb-4">Contato</h4>
+            <ul className="space-y-3 text-sm text-gray-500">
               <li>
                 <span className="font-medium text-gray-700">Email:</span>
                 <br />
                 <a
                   href="mailto:contato@fofurinhasbaby.com.br"
-                  className="transition-colors hover:text-pink-500"
+                  className="transition-colors hover:text-baby-pink"
                 >
                   contato@fofurinhasbaby.com.br
                 </a>
@@ -87,7 +84,7 @@ export function Footer() {
                   href="https://wa.me/5511999999999"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-colors hover:text-pink-500"
+                  className="transition-colors hover:text-baby-pink"
                 >
                   (11) 99999-9999
                 </a>
@@ -99,78 +96,10 @@ export function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Social Media */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-800">
-              Redes Sociais
-            </h3>
-            <div className="flex gap-3">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
-                aria-label="Instagram"
-              >
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
-                aria-label="Facebook"
-              >
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385h-3.047v-3.47h3.047v-2.642c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385c5.737-.9 10.125-5.864 10.125-11.854z" />
-                </svg>
-              </a>
-              <a
-                href="https://tiktok.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm transition-colors hover:bg-gradient-button hover:text-white hover:shadow-pink-glow hover:scale-110"
-                aria-label="TikTok"
-              >
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-                </svg>
-              </a>
-            </div>
-            <div className="mt-6">
-              <p className="mb-2 text-sm font-medium text-gray-700">
-                Newsletter
-              </p>
-              <form className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Seu e-mail"
-                  className="flex-1 rounded-full border border-pink-200 bg-white px-4 py-2 text-sm placeholder:text-gray-400 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
-                />
-                <button
-                  type="submit"
-                  className="rounded-full bg-gradient-button px-5 py-2 text-sm font-bold text-white transition-all hover:shadow-pink-glow"
-                >
-                  Assinar
-                </button>
-              </form>
-            </div>
-          </div>
         </div>
-      </div>
 
-      {/* Copyright */}
-      <div className="border-t border-pink-200/50 bg-white/30">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <p className="flex items-center justify-center gap-1 text-center text-xs text-gray-500">
-            &copy; {new Date().getFullYear()} Fofurinhas Baby. Todos os
-            direitos reservados. Feito com
-            <Heart className="inline h-3 w-3 fill-pink-500 text-pink-500" />
-            no Brasil.
-          </p>
+        <div className="text-center pt-8 border-t border-gray-100 text-sm text-gray-400 font-medium">
+          &copy; {new Date().getFullYear()} Fofurinhas Baby. Todos os direitos reservados. Feito com &#128150; para seu bebe.
         </div>
       </div>
     </footer>
