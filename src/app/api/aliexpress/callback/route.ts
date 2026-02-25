@@ -71,10 +71,12 @@ export async function GET(request: NextRequest) {
     const user_nick = String(data.user_nick || "");
 
     if (!access_token) {
+      // Debug: mostrar toda a estrutura de dados retornada
+      const debugInfo = JSON.stringify(result.data, null, 2);
       return new NextResponse(
         renderHTML(
           "Token Não Recebido",
-          "A autorização foi aceita mas o AliExpress não retornou um access_token. Tente novamente.",
+          `A autorização foi aceita mas o AliExpress não retornou um access_token. Dados recebidos:<br><pre style="text-align:left;background:#f1f5f9;padding:12px;border-radius:8px;font-size:12px;overflow:auto;max-height:300px;">${debugInfo}</pre>`,
           true,
         ),
         { status: 502, headers: { "Content-Type": "text/html; charset=utf-8" } },
