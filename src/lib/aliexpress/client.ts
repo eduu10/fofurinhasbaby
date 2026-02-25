@@ -90,7 +90,13 @@ export class AliExpressHybridClient {
     }
 
     // Tentativa 3: Cache no banco (fonte terciária)
-    return this.getProductFromCache(productId);
+    const cached = await this.getProductFromCache(productId);
+    if (cached) {
+      return cached;
+    }
+
+    // Tentativa 4: Scraper HTML direto (último recurso)
+    return this.getProductFromHtmlScraper(productId);
   }
 
   /**
@@ -562,6 +568,131 @@ export class AliExpressHybridClient {
     }
 
     return [...new Set(images)];
+  }
+
+  // =========================================================================
+  // FONTE QUATERNÁRIA: Scraper HTML direto (último recurso)
+  // =========================================================================
+
+  private async getProductFromHtmlScraper(productId: string): Promise<HybridProductData | null> {
+    console.log(`[HtmlScraper] Tentando scraper HTML direto para ${productId}...`);
+
+    const urlVariants = [
+      `https://www.aliexpress.com/item/${productId}.html`,
+      `https://pt.aliexpress.com/item/${productId}.html`,
+      `https://m.aliexpress.com/item/${productId}.html`,
+    ];
+
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Encoding": "identity",
+    };
+
+    let html = "";
+    for (const tryUrl of urlVariants) {
+      try {
+        const res = await fetch(tryUrl, { headers, redirect: "follow" });
+        if (res.ok) {
+          const text = await res.text();
+          if (text.includes("alicdn.com") || text.includes("imagePathList") || text.includes("og:title")) {
+            html = text;
+            break;
+          }
+        }
+      } catch { /* next */ }
+    }
+
+    if (!html) return null;
+
+    // Extract title
+    let title = "";
+    const titlePatterns = [
+      /property="og:title"\s+content="([^"]+)"/,
+      /content="([^"]+)"\s+property="og:title"/,
+      /"subject"\s*:\s*"([^"]+)"/,
+      /"title"\s*:\s*"([^"]{10,200})"/,
+      /<title[^>]*>([^<]+)<\/title>/i,
+    ];
+    for (const p of titlePatterns) {
+      const m = html.match(p);
+      if (m && m[1].length > 5) {
+        title = m[1].replace(/\s*[-|].*AliExpress.*$/i, "").replace(/\s*-\s*Compre.*$/i, "").trim();
+        if (title.length > 5) break;
+      }
+    }
+
+    // Extract images
+    const images: string[] = [];
+    const imgListMatch = html.match(/"imagePathList"\s*:\s*(\["[^"]*"(?:\s*,\s*"[^"]*")*\])/);
+    if (imgListMatch) {
+      try {
+        const imgUrls = JSON.parse(imgListMatch[1]) as string[];
+        images.push(...imgUrls.map((u) => (u.startsWith("//") ? `https:${u}` : u)));
+      } catch { /* */ }
+    }
+    if (images.length === 0) {
+      const kfPattern = /https?:\/\/ae\d+\.alicdn\.com\/kf\/[A-Za-z0-9]+\.(jpg|jpeg|png|webp)/gi;
+      const seen = new Set<string>();
+      for (const m of html.matchAll(kfPattern)) {
+        if (!seen.has(m[0]) && !m[0].includes("_80x80") && !m[0].includes("_50x50")) {
+          seen.add(m[0]);
+          images.push(m[0]);
+        }
+        if (seen.size >= 6) break;
+      }
+    }
+    if (images.length === 0) {
+      const ogImgMatch = html.match(/property="og:image"\s+content="([^"]+)"/) || html.match(/content="([^"]+)"\s+property="og:image"/);
+      if (ogImgMatch) images.push(ogImgMatch[1].startsWith("//") ? `https:${ogImgMatch[1]}` : ogImgMatch[1]);
+    }
+
+    // Extract price
+    let priceUSD = 0;
+    const pricePatterns = [
+      /"formatedAmount"\s*:\s*"(?:US\s*\$|R\$)\s*([\d.,]+)"/,
+      /"minAmount"\s*:\s*\{[^}]*?"value"\s*:\s*([\d.]+)/,
+      /"minPrice"\s*:\s*"([\d.]+)"/,
+      /property="product:price:amount"\s+content="([\d.]+)"/,
+    ];
+    for (const p of pricePatterns) {
+      const m = html.match(p);
+      if (m) {
+        priceUSD = parseFloat(m[1].replace(",", "."));
+        if (priceUSD > 0) break;
+      }
+    }
+
+    // Extract description
+    let description = "";
+    const descPatterns = [
+      /property="og:description"\s+content="([^"]+)"/,
+      /content="([^"]+)"\s+property="og:description"/,
+    ];
+    for (const p of descPatterns) {
+      const m = html.match(p);
+      if (m && m[1].length > 10) { description = m[1].trim(); break; }
+    }
+
+    if (!title && images.length === 0) return null;
+
+    return {
+      productId,
+      title: title || `Produto AliExpress ${productId}`,
+      description,
+      images,
+      priceUSD,
+      originalPriceUSD: 0,
+      rating: 0,
+      reviewCount: 0,
+      ordersCount: 0,
+      stock: 50,
+      variations: [],
+      sellerInfo: null,
+      productUrl: `https://www.aliexpress.com/item/${productId}.html`,
+      source: "scraper" as "omkar",
+    };
   }
 }
 
