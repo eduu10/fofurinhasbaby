@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCartStore } from "@/stores/cart-store";
 import { useAuthStore } from "@/stores/auth-store";
@@ -38,6 +38,11 @@ export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
   const itemCount = useCartStore((state) => state.getItemCount());
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const initAuth = useAuthStore((state) => state.initAuth);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

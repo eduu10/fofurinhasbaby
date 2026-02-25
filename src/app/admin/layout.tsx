@@ -13,14 +13,19 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, _initialized, initAuth } = useAuthStore();
+
   useEffect(() => {
-    if (!user || user.role !== "ADMIN") {
+    initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (_initialized && (!user || user.role !== "ADMIN")) {
       router.push("/login?redirect=/admin");
     }
-  }, [user, router]);
+  }, [user, _initialized, router]);
 
-  if (!user || user.role !== "ADMIN") return null;
+  if (!_initialized || !user || user.role !== "ADMIN") return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50">

@@ -20,11 +20,15 @@ export default function AccountLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, _initialized, initAuth } = useAuthStore();
 
   useEffect(() => {
-    if (!user) router.push("/login?redirect=/account");
-  }, [user, router]);
+    initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (_initialized && !user) router.push("/login?redirect=/account");
+  }, [user, _initialized, router]);
 
   function handleLogout() {
     fetch("/api/auth/logout", { method: "POST" });
@@ -32,7 +36,7 @@ export default function AccountLayout({
     router.push("/");
   }
 
-  if (!user) return null;
+  if (!_initialized || !user) return null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
