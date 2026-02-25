@@ -17,6 +17,8 @@ import {
   ChevronRight,
   Menu,
   X,
+  Globe,
+  Import,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -29,6 +31,11 @@ const sidebarLinks = [
     href: "/admin/products",
     label: "Produtos",
     icon: Package,
+  },
+  {
+    href: "/admin/products/import",
+    label: "Importar AliExpress",
+    icon: Import,
   },
   {
     href: "/admin/orders",
@@ -54,6 +61,11 @@ const sidebarLinks = [
     href: "/admin/settings",
     label: "Configuracoes",
     icon: Settings,
+  },
+  {
+    href: "/admin/settings/aliexpress",
+    label: "AliExpress",
+    icon: Globe,
   },
 ];
 

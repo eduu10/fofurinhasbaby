@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { useEffect } from "react";
-import { User, Package, MapPin, LogOut } from "lucide-react";
+import { User, Package, MapPin, Heart, LogOut } from "lucide-react";
 
 const links = [
   { href: "/account", label: "Meus Dados", icon: User },
   { href: "/account/orders", label: "Meus Pedidos", icon: Package },
-  { href: "/account/addresses", label: "Endereços", icon: MapPin },
+  { href: "/account/favorites", label: "Favoritos", icon: Heart },
+  { href: "/account/addresses", label: "Enderecos", icon: MapPin },
 ];
 
 export default function AccountLayout({

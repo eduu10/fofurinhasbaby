@@ -1,15 +1,21 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ProductGrid } from "@/components/product/product-grid";
+import { HeroCarousel } from "@/components/home/hero-carousel";
+import { BestsellerCarousel } from "@/components/home/bestseller-carousel";
+import { RecentlyViewed } from "@/components/home/recently-viewed";
+import { TestimonialsSection } from "@/components/home/testimonials-section";
+import { FlashSaleBanner } from "@/components/home/flash-sale-banner";
+import { WhatsAppButton } from "@/components/home/whatsapp-button";
 import {
   ShieldCheck,
-  Truck,
-  CreditCard,
-  Check,
-  Star,
   Heart,
+  Users,
+  Lock,
+  Package,
 } from "lucide-react";
 
 async function getFeaturedProducts() {
@@ -30,7 +36,7 @@ async function getBestsellers() {
       where: { isActive: true, isDraft: false },
       include: { images: { orderBy: { sortOrder: "asc" } }, category: true },
       orderBy: { salesCount: "desc" },
-      take: 8,
+      take: 12,
     });
   } catch {
     return [];
@@ -55,146 +61,104 @@ async function getOffers() {
 
 async function getCategories() {
   try {
-    return await prisma.category.findMany({
+    const categories = await prisma.category.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
       take: 6,
+      include: {
+        _count: { select: { products: { where: { isActive: true, isDraft: false } } } },
+      },
     });
+    return categories;
   } catch {
     return [];
   }
 }
 
-async function getHeroSettings() {
-  try {
-    const settings = await prisma.storeSetting.findMany({
-      where: {
-        key: {
-          in: [
-            "heroBadge",
-            "heroTitle1",
-            "heroTitle2",
-            "heroDescription",
-            "heroCta1",
-            "heroCta2",
-            "heroImage",
-            "heroTestimonial",
-            "heroTestimonialAuthor",
-          ],
-        },
-      },
-    });
-    const map: Record<string, string> = {};
-    settings.forEach((s) => {
-      map[s.key] = s.value;
-    });
-    return map;
-  } catch {
-    return {};
-  }
-}
+const CATEGORY_EMOJIS: Record<string, string> = {
+  roupas: "\uD83D\uDC5A",
+  acessorios: "\uD83C\uDF80",
+  brinquedos: "\uD83E\uDDF8",
+  higiene: "\uD83D\uDEC1",
+  alimentacao: "\uD83C\uDF7C",
+  decoracao: "\u2B50",
+};
 
 export default async function HomePage() {
-  const [featured, bestsellers, offers, categories, heroSettings] = await Promise.all([
+  const [featured, bestsellers, offers, categories] = await Promise.all([
     getFeaturedProducts(),
     getBestsellers(),
     getOffers(),
     getCategories(),
-    getHeroSettings(),
   ]);
 
-  const heroBadge = heroSettings.heroBadge || "\u2728 Novidade Magica";
-  const heroTitle1 = heroSettings.heroTitle1 || "Sonhos Doces &";
-  const heroTitle2 = heroSettings.heroTitle2 || "Noites Tranquilas";
-  const heroDescription = heroSettings.heroDescription || "Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.";
-  const heroCta1 = heroSettings.heroCta1 || "VER OFERTAS";
-  const heroCta2 = heroSettings.heroCta2 || "MAIS VENDIDOS";
-  const heroImage = heroSettings.heroImage || "https://images.unsplash.com/photo-1515488042361-ee0065ab4d8b?auto=format&fit=crop&q=80&w=800";
-  const heroTestimonial = heroSettings.heroTestimonial || "Meu bebe dormiu em 5 minutos!";
-  const heroTestimonialAuthor = heroSettings.heroTestimonialAuthor || "Mamae Julia";
+  // Map bestsellers for the carousel component
+  const bestsellerData = bestsellers.map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    price: Number(p.price),
+    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    image: p.images?.[0]?.url || "https://placehold.co/400x400/FFDEE2/333?text=Produto",
+    salesCount: p.salesCount,
+    stock: p.stock,
+    minQuantity: p.minQuantity ?? 1,
+    maxQuantity: p.maxQuantity ?? 99,
+  }));
+
+  // Flash sale products (those with discount)
+  const flashProducts = offers
+    .filter((p) => p.compareAtPrice && Number(p.compareAtPrice) > Number(p.price))
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      price: Number(p.price),
+      compareAtPrice: Number(p.compareAtPrice!),
+      image: p.images?.[0]?.url || "https://placehold.co/400x400/FFDEE2/333?text=Oferta",
+      stock: p.stock,
+      minQuantity: p.minQuantity ?? 1,
+      maxQuantity: p.maxQuantity ?? 99,
+    }));
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-pastel-hero pt-8 pb-16 overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-10 left-10 text-baby-pink/20 animate-pulse">
-          <Star size={48} fill="currentColor" />
-        </div>
-        <div className="absolute bottom-20 right-10 text-baby-yellow/40 animate-bounce">
-          <Star size={64} fill="currentColor" />
-        </div>
-
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="lg:w-1/2 space-y-6 text-center lg:text-left z-10">
-              <div className="inline-block bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full text-accent-orange font-bold text-sm shadow-sm border border-orange-100 animate-fade-in-up">
-                {heroBadge}
-              </div>
-              <h1 className="font-display text-5xl lg:text-7xl font-bold text-gray-800 leading-[0.9] animate-fade-in-up">
-                <span className="text-baby-blue">{heroTitle1}</span>
-                <br />
-                <span className="text-baby-pink">{heroTitle2}</span>
-              </h1>
-              <p className="text-lg text-gray-600 max-w-lg mx-auto lg:mx-0 font-medium animate-fade-in-up">
-                {heroDescription}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up">
-                <Link
-                  href="/products"
-                  className="bg-accent-orange text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-105 transition-all active:scale-95 text-center"
-                >
-                  {heroCta1}
-                </Link>
-                <Link
-                  href="/products?sort=sales"
-                  className="bg-white text-gray-700 font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-md hover:bg-gray-50 transition-all border-2 border-gray-100 text-center"
-                >
-                  {heroCta2}
-                </Link>
-              </div>
-            </div>
-
-            <div className="lg:w-1/2 relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-baby-blue/30 to-baby-pink/30 rounded-full blur-3xl transform scale-90" />
-              <img
-                src={heroImage}
-                alt="Bebe feliz"
-                className="relative z-10 rounded-[3rem] shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500 w-full max-w-md mx-auto"
-              />
-
-              {/* Floating Badge */}
-              <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-2xl shadow-xl border-2 border-baby-yellow max-w-[160px] hidden sm:block animate-bounce">
-                <div className="flex items-center gap-1 text-accent-orange mb-1">
-                  <Star fill="currentColor" size={16} />
-                  <Star fill="currentColor" size={16} />
-                  <Star fill="currentColor" size={16} />
-                  <Star fill="currentColor" size={16} />
-                  <Star fill="currentColor" size={16} />
-                </div>
-                <p className="text-xs font-bold text-gray-600 leading-tight">&quot;{heroTestimonial}&quot;</p>
-                <p className="text-[10px] text-gray-400 mt-1">- {heroTestimonialAuthor}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Trust Badges */}
       <section className="bg-white py-8 border-y border-gray-100">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { icon: ShieldCheck, title: "Compra Segura", text: "Seus dados protegidos" },
-              { icon: Truck, title: "Frete Rapido", text: "Entrega para todo Brasil" },
-              { icon: CreditCard, title: "Ate 12x", text: "Sem juros no cartao" },
-              { icon: Check, title: "Garantia", text: "7 dias para troca" },
+              {
+                icon: Users,
+                title: "1.200+ Mamaes",
+                text: "Clientes satisfeitas em todo Brasil",
+              },
+              {
+                icon: Package,
+                title: "Envio Direto",
+                text: "Enviado direto para sua casa",
+              },
+              {
+                icon: Lock,
+                title: "100% Seguro",
+                text: "Pagamento com criptografia SSL",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Garantia",
+                text: "7 dias para troca ou devolucao",
+              },
             ].map((item, idx) => (
               <div key={idx} className="flex flex-col items-center text-center gap-2">
                 <div className="w-12 h-12 bg-baby-blue/10 text-baby-blue rounded-full flex items-center justify-center mb-1">
                   <item.icon size={24} strokeWidth={2.5} />
                 </div>
-                <h3 className="font-display font-bold text-gray-800">{item.title}</h3>
+                <h3 className="font-display font-bold text-gray-800">
+                  {item.title}
+                </h3>
                 <p className="text-xs text-gray-500 font-medium">{item.text}</p>
               </div>
             ))}
@@ -205,22 +169,45 @@ export default async function HomePage() {
       {/* Categories */}
       {categories.length > 0 && (
         <section className="container mx-auto px-4 py-12">
-          <h2 className="mb-8 text-2xl font-display font-bold text-gradient-pink">Categorias</h2>
+          <h2 className="mb-8 text-2xl font-display font-bold text-gradient-pink">
+            Categorias
+          </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${cat.slug}`}
-                className="group flex flex-col items-center rounded-2xl border-2 border-baby-blue/20 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-pastel hover:-translate-y-1 hover:border-baby-blue/50"
-              >
-                <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-baby-blue/10 text-2xl transition group-hover:scale-110">
-                  &#129528;
-                </div>
-                <span className="text-sm font-display font-bold text-gray-700 group-hover:text-baby-pink">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
+            {categories.map((cat) => {
+              const emoji = CATEGORY_EMOJIS[cat.slug] || "\uD83E\uDDF8";
+              const productCount = (cat as unknown as { _count: { products: number } })._count;
+
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.slug}`}
+                  className="group flex flex-col items-center rounded-2xl border-2 border-baby-blue/20 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-pastel hover:-translate-y-1 hover:border-baby-blue/50 relative"
+                >
+                  <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-baby-blue/10 text-3xl transition group-hover:scale-110">
+                    {cat.image ? (
+                      <Image
+                        src={cat.image}
+                        alt={cat.name}
+                        width={48}
+                        height={48}
+                        className="rounded-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <span>{emoji}</span>
+                    )}
+                  </div>
+                  <span className="text-sm font-display font-bold text-gray-700 group-hover:text-baby-pink">
+                    {cat.name}
+                  </span>
+                  {productCount && productCount.products > 0 && (
+                    <span className="absolute top-2 right-2 bg-baby-pink/10 text-baby-pink text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {productCount.products}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
@@ -229,9 +216,14 @@ export default async function HomePage() {
       {featured.length > 0 && (
         <section className="container mx-auto px-4 py-12">
           <div className="text-center mb-12">
-            <span className="text-baby-pink font-bold tracking-wider uppercase text-sm">Os queridinhos das mamaes</span>
+            <span className="text-baby-pink font-bold tracking-wider uppercase text-sm">
+              Os queridinhos das mamaes
+            </span>
             <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-              Produtos em <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Destaque</span>
+              Produtos em{" "}
+              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
+                Destaque
+              </span>
             </h2>
           </div>
           <ProductGrid products={featured} />
@@ -246,36 +238,34 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Bestsellers */}
-      {bestsellers.length > 0 && (
-        <section className="bg-baby-blue/5 py-12">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <span className="text-baby-blue font-bold tracking-wider uppercase text-sm">Top vendas</span>
-              <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-                Mais <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Vendidos</span>
-              </h2>
-            </div>
-            <ProductGrid products={bestsellers} />
-            <div className="text-center mt-8">
-              <Link
-                href="/products?sort=sales"
-                className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors"
-              >
-                Ver todos &rarr;
-              </Link>
-            </div>
-          </div>
-        </section>
+      {/* Flash Sale Banner */}
+      {flashProducts.length > 0 && (
+        <FlashSaleBanner products={flashProducts} />
       )}
+
+      {/* Bestsellers Carousel (real-time) */}
+      {bestsellerData.length > 0 && (
+        <BestsellerCarousel products={bestsellerData} />
+      )}
+
+      {/* Recently Viewed (client-side) */}
+      <RecentlyViewed />
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Offers */}
       {offers.length > 0 && (
         <section className="container mx-auto px-4 py-12">
           <div className="text-center mb-12">
-            <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">Aproveite!</span>
+            <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">
+              Aproveite!
+            </span>
             <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-              Ofertas <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Imperdiveis</span>
+              Ofertas{" "}
+              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
+                Imperdiveis
+              </span>
             </h2>
           </div>
           <ProductGrid products={offers} />
@@ -301,7 +291,9 @@ export default async function HomePage() {
               Entre para o Clube da Mamae!
             </h2>
             <p className="text-gray-600 mb-8 max-w-lg mx-auto">
-              Receba dicas exclusivas, ofertas secretas e um cupom de <span className="font-bold text-accent-orange">10% OFF</span> na sua primeira compra.
+              Receba dicas exclusivas, ofertas secretas e um cupom de{" "}
+              <span className="font-bold text-accent-orange">10% OFF</span> na
+              sua primeira compra.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
@@ -314,11 +306,14 @@ export default async function HomePage() {
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-4">
-              Prometemos nao enviar spam. Apenas amor e ofertas! &#128150;
+              Prometemos nao enviar spam. Apenas amor e ofertas!
             </p>
           </div>
         </div>
       </section>
+
+      {/* WhatsApp Floating Button */}
+      <WhatsAppButton />
     </div>
   );
 }

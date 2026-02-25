@@ -10,10 +10,13 @@ function mapProduct(p: any): ProductCardData {
     price: Number(p.price),
     compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
     image: p.images?.[0]?.url || "/placeholder.png",
+    secondImage: p.images?.[1]?.url || null,
     category: p.category?.name || null,
     stock: p.stock,
     minQuantity: p.minQuantity ?? 1,
     maxQuantity: p.maxQuantity ?? 99,
+    salesCount: p.salesCount ?? 0,
+    freeShipping: Number(p.price) >= 99,
   };
 }
 

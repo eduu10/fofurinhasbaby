@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Send, RefreshCw, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Order {
   id: string;
@@ -11,6 +12,8 @@ interface Order {
   status: string;
   total: string;
   createdAt: string;
+  aliexpressOrderId?: string | null;
+  trackingCode?: string | null;
   user: { name: string; email: string };
   items: { id: string }[];
 }
@@ -28,6 +31,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [sendingToAE, setSendingToAE] = useState<string | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -49,6 +54,41 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function sendToAliExpress(orderId: string) {
+    setSendingToAE(orderId);
+    try {
+      const res = await fetch("/api/aliexpress/order/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Pedido enviado para o AliExpress!");
+        fetchOrders();
+      } else {
+        toast.error(json.error || "Erro ao enviar para AliExpress");
+      }
+    } catch {
+      toast.error("Erro ao enviar para AliExpress");
+    } finally {
+      setSendingToAE(null);
+    }
+  }
+
+  async function syncAEStatus(orderId: string) {
+    setSyncingId(orderId);
+    try {
+      const res = await fetch(`/api/aliexpress/order/${orderId}/status`);
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Status atualizado!");
+        fetchOrders();
+      }
+    } catch { /* ignore */ }
+    finally { setSyncingId(null); }
   }
 
   return (
@@ -122,9 +162,31 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4 text-gray-500">{new Date(order.createdAt).toLocaleDateString("pt-BR")}</td>
                       <td className="px-6 py-4">
-                        <Link href={`/admin/orders/${order.id}`} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 inline-block">
-                          <Eye className="h-4 w-4" />
-                        </Link>
+                        <div className="flex items-center gap-1">
+                          <Link href={`/admin/orders/${order.id}`} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 inline-block" title="Ver detalhes">
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                          {order.status === "PAID" && !order.aliexpressOrderId && (
+                            <button
+                              onClick={() => sendToAliExpress(order.id)}
+                              disabled={sendingToAE === order.id}
+                              className="rounded-lg p-2 text-orange-400 hover:bg-orange-50 hover:text-orange-600 inline-block disabled:opacity-50"
+                              title="Enviar para AliExpress"
+                            >
+                              {sendingToAE === order.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            </button>
+                          )}
+                          {order.aliexpressOrderId && (
+                            <button
+                              onClick={() => syncAEStatus(order.id)}
+                              disabled={syncingId === order.id}
+                              className="rounded-lg p-2 text-blue-400 hover:bg-blue-50 hover:text-blue-600 inline-block disabled:opacity-50"
+                              title="Sincronizar status AliExpress"
+                            >
+                              <RefreshCw className={`h-4 w-4 ${syncingId === order.id ? "animate-spin" : ""}`} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

@@ -112,6 +112,32 @@ export function Footer({
           </div>
         </div>
 
+        {/* Security Seals & Payment Methods */}
+        <div className="border-t border-gray-100 pt-8 mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Formas de Pagamento</p>
+              <div className="flex items-center gap-3">
+                {["PIX", "Visa", "Master", "Elo", "Boleto"].map((method) => (
+                  <span key={method} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-lg">
+                    {method}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Seguranca</p>
+              <div className="flex items-center gap-3">
+                {["SSL 256-bit", "Compra Segura", "Dados Protegidos"].map((seal) => (
+                  <span key={seal} className="bg-green-50 text-green-700 text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    &#9989; {seal}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="text-center pt-8 border-t border-gray-100 text-sm text-gray-400 font-medium">
           &copy; {new Date().getFullYear()} {storeName || "Fofurinhas Baby"}. Todos os direitos reservados. Feito com &#128150; para seu bebe.
         </div>
