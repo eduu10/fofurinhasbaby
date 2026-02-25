@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, generateToken } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,6 +48,12 @@ export async function POST(request: NextRequest) {
       email: user.email,
       role: user.role,
     });
+
+    // E-mail de boas-vindas em background
+    sendWelcomeEmail({
+      to: user.email,
+      customerName: user.name,
+    }).catch((err) => console.error("[Email] Boas-vindas falhou:", err));
 
     return successResponse({ user, token }, 201);
   } catch (error) {
