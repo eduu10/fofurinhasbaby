@@ -334,31 +334,28 @@ async function notifyAdmin(alerts: string[]) {
   const alertsHtml = alerts.map((a) => `<li style="margin:4px 0;color:#b91c1c;">${a}</li>`).join("");
 
   try {
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPass = process.env.SMTP_PASS;
-    const smtpFrom = process.env.SMTP_FROM || "Fofurinhas Baby <noreply@fofurinhasbaby.com>";
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
 
-    if (!smtpHost || !smtpPass) {
+    if (!gmailUser || !gmailPass) {
       console.log("[Cron] Alertas para admin:", alerts);
       return;
     }
 
-    await fetch(`https://${smtpHost}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${smtpPass}`,
-      },
-      body: JSON.stringify({
-        from: smtpFrom,
-        to: [admin.email],
-        subject: `[Fofurinhas] ${alerts.length} alerta(s) de sync`,
-        html: `
-          <h2>Alertas do Sync Diário</h2>
-          <ul>${alertsHtml}</ul>
-          <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin">Abrir painel admin</a></p>
-        `,
-      }),
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+    await transporter.sendMail({
+      from: `"Fofurinhas Baby" <${gmailUser}>`,
+      to: admin.email,
+      subject: `[Fofurinhas] ${alerts.length} alerta(s) de sync`,
+      html: `
+        <h2>Alertas do Sync Diário</h2>
+        <ul>${alertsHtml}</ul>
+        <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin">Abrir painel admin</a></p>
+      `,
     });
   } catch (error) {
     console.error("[Cron] Erro ao notificar admin:", error);

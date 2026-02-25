@@ -139,12 +139,11 @@ async function sendAdminPurchaseEmail(
 
   if (!admin) return;
 
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpFrom = process.env.SMTP_FROM || "Fofurinhas Baby <noreply@fofurinhasbaby.com>";
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_PASS;
 
-  if (!smtpHost || !smtpPass) {
-    console.log("[Dropship] Email para admin (SMTP não configurado):");
+  if (!gmailUser || !gmailPass) {
+    console.log("[Dropship] Email para admin (Gmail não configurado):");
     console.log(`  Pedido: #${order.orderNumber}`);
     console.log(`  Cliente: ${order.user.name} (${order.user.email})`);
     console.log(`  Link de compra: ${affiliateUrl}`);
@@ -214,18 +213,16 @@ async function sendAdminPurchaseEmail(
   `;
 
   try {
-    await fetch(`https://${smtpHost}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${smtpPass}`,
-      },
-      body: JSON.stringify({
-        from: smtpFrom,
-        to: [admin.email],
-        subject: `[COMPRAR] Pedido #${order.orderNumber} — ${aeItems.length} item(s)`,
-        html,
-      }),
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+    await transporter.sendMail({
+      from: `"Fofurinhas Baby" <${gmailUser}>`,
+      to: admin.email,
+      subject: `[COMPRAR] Pedido #${order.orderNumber} — ${aeItems.length} item(s)`,
+      html,
     });
   } catch (error) {
     console.error("[Dropship] Erro ao enviar email ao admin:", error);

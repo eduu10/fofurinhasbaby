@@ -61,14 +61,19 @@ export async function GET(request: NextRequest) {
     };
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fofurinhasbaby.vercel.app";
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPass = process.env.SMTP_PASS;
-    const smtpFrom = process.env.SMTP_FROM || "Fofurinhas Baby <noreply@fofurinhasbaby.com>";
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
 
-    if (!smtpHost || !smtpPass) {
-      console.log(`[Cart Abandon] ${abandonedCarts.length} carrinhos abandonados (email não configurado)`);
+    if (!gmailUser || !gmailPass) {
+      console.log(`[Cart Abandon] ${abandonedCarts.length} carrinhos abandonados (Gmail não configurado)`);
       return NextResponse.json({ message: "Email not configured", ...results });
     }
+
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
 
     for (const cart of abandonedCarts) {
       try {
@@ -121,35 +126,21 @@ export async function GET(request: NextRequest) {
             },
           });
 
-          await fetch(`https://${smtpHost}/emails`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${smtpPass}`,
-            },
-            body: JSON.stringify({
-              from: smtpFrom,
-              to: [user.email],
-              subject: `${user.name.split(" ")[0]}, seu ${mainProduct.title} está esperando + 5% OFF`,
-              html: buildSecondEmail(user.name, mainProduct.title, productImage, cartUrl, couponCode),
-            }),
+          await transporter.sendMail({
+            from: `"Fofurinhas Baby" <${gmailUser}>`,
+            to: user.email,
+            subject: `${user.name.split(" ")[0]}, seu ${mainProduct.title} está esperando + 5% OFF`,
+            html: buildSecondEmail(user.name, mainProduct.title, productImage, cartUrl, couponCode),
           });
 
           results.secondEmailSent++;
         } else {
           // Primeiro email: lembrete sem cupom
-          await fetch(`https://${smtpHost}/emails`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${smtpPass}`,
-            },
-            body: JSON.stringify({
-              from: smtpFrom,
-              to: [user.email],
-              subject: `${user.name.split(" ")[0]}, você esqueceu algo no carrinho`,
-              html: buildFirstEmail(user.name, mainProduct.title, productImage, cartUrl, productUrl),
-            }),
+          await transporter.sendMail({
+            from: `"Fofurinhas Baby" <${gmailUser}>`,
+            to: user.email,
+            subject: `${user.name.split(" ")[0]}, você esqueceu algo no carrinho`,
+            html: buildFirstEmail(user.name, mainProduct.title, productImage, cartUrl, productUrl),
           });
 
           results.firstEmailSent++;

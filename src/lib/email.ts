@@ -1,49 +1,37 @@
 /**
  * Serviço de email para notificações de pedidos.
- * Usa API HTTP (compatível com Resend, SendGrid, etc).
- * Se as variáveis de ambiente não estiverem configuradas, faz fallback para console.log.
+ * Usa nodemailer com Gmail (App Password).
  *
- * Variáveis de ambiente necessárias (Resend):
- * - SMTP_HOST (ex: api.resend.com)
- * - SMTP_PORT (não usado na API, mas mantido para compatibilidade)
- * - SMTP_USER (ex: resend)
- * - SMTP_PASS (ex: re_xxx - API key)
- * - SMTP_FROM (ex: "Fofurinhas Baby <noreply@fofurinhasbaby.com>")
+ * Variáveis de ambiente necessárias:
+ * - GMAIL_USER   → fofurinhasbaby365@gmail.com
+ * - GMAIL_PASS   → senha de app gerada no Google (16 chars, sem espaços)
+ *
+ * Como gerar a senha de app:
+ * 1. Acesse myaccount.google.com → Segurança → Verificação em 2 etapas (ativar)
+ * 2. Volte em Segurança → "Senhas de app"
+ * 3. Selecione "Outro" → nomeie "Fofurinhas Baby" → Gerar
+ * 4. Cole a senha de 16 caracteres em GMAIL_PASS
  */
 
-interface EmailOptions {
-  to: string;
-  subject: string;
-  html: string;
-}
+import nodemailer from "nodemailer";
 
-interface OrderConfirmationData {
-  to: string;
-  customerName: string;
-  orderNumber: string;
-  total: number;
-  items: { title: string; quantity: number; price: number }[];
-}
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_PASS = process.env.GMAIL_PASS;
 
-interface OrderStatusData {
-  to: string;
-  customerName: string;
-  orderNumber: string;
-  status: string;
-  statusLabel: string;
-  message: string;
-  trackingCode?: string;
-  trackingUrl?: string;
-}
-
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_FROM = process.env.SMTP_FROM || "Fofurinhas Baby <noreply@fofurinhasbaby.com>";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fofurinhasbaby.vercel.app";
 
 function isEmailConfigured(): boolean {
-  return !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
+  return !!(GMAIL_USER && GMAIL_PASS);
+}
+
+function getTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_PASS,
+    },
+  });
 }
 
 function formatCurrency(value: number): string {
@@ -53,7 +41,11 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fofurinhasbaby.vercel.app";
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+}
 
 function emailLayout(content: string): string {
   return `
@@ -94,40 +86,37 @@ function emailLayout(content: string): string {
 
 async function sendEmail(options: EmailOptions): Promise<boolean> {
   if (!isEmailConfigured()) {
-    console.log(`[Email Preview] To: ${options.to} | Subject: ${options.subject}`);
-    console.log(`[Email Preview] This email was not sent (SMTP not configured)`);
+    console.log(`[Email Preview] Para: ${options.to} | Assunto: ${options.subject}`);
+    console.log(`[Email Preview] Configure GMAIL_USER e GMAIL_PASS no .env para enviar e-mails.`);
     return false;
   }
 
   try {
-    // Usar Resend API (SMTP_HOST=resend, SMTP_PASS=api_key)
-    // Ou qualquer serviço HTTP de email via fetch
-    const res = await fetch(`https://${SMTP_HOST}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${SMTP_PASS}`,
-      },
-      body: JSON.stringify({
-        from: SMTP_FROM,
-        to: [options.to],
-        subject: options.subject,
-        html: options.html,
-      }),
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: `"Fofurinhas Baby" <${GMAIL_USER}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
     });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`[Email] API error (${res.status}):`, errorText);
-      return false;
-    }
-
-    console.log(`[Email] Sent to ${options.to}: ${options.subject}`);
+    console.log(`[Email] Enviado para ${options.to}: ${options.subject}`);
     return true;
   } catch (error) {
-    console.error(`[Email] Failed to send to ${options.to}:`, error);
+    console.error(`[Email] Falhou ao enviar para ${options.to}:`, error);
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Templates
+// ---------------------------------------------------------------------------
+
+interface OrderConfirmationData {
+  to: string;
+  customerName: string;
+  orderNumber: string;
+  total: number;
+  items: { title: string; quantity: number; price: number }[];
 }
 
 export async function sendOrderConfirmationEmail(data: OrderConfirmationData): Promise<boolean> {
@@ -135,15 +124,9 @@ export async function sendOrderConfirmationEmail(data: OrderConfirmationData): P
     .map(
       (item) => `
       <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">
-          ${item.title}
-        </td>
-        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:center;">
-          ${item.quantity}
-        </td>
-        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:right;">
-          ${formatCurrency(item.price * item.quantity)}
-        </td>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${item.title}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:center;">${item.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
       </tr>`,
     )
     .join("");
@@ -193,6 +176,17 @@ export async function sendOrderConfirmationEmail(data: OrderConfirmationData): P
     subject: `Pedido #${data.orderNumber} confirmado - Fofurinhas Baby`,
     html,
   });
+}
+
+interface OrderStatusData {
+  to: string;
+  customerName: string;
+  orderNumber: string;
+  status: string;
+  statusLabel: string;
+  message: string;
+  trackingCode?: string;
+  trackingUrl?: string;
 }
 
 export async function sendOrderStatusEmail(data: OrderStatusData): Promise<boolean> {
@@ -287,5 +281,97 @@ export async function sendShippingNotificationEmail(data: {
       : "Seu pedido foi enviado e está a caminho!",
     trackingCode: data.trackingCode,
     trackingUrl: data.trackingUrl,
+  });
+}
+
+export async function sendOrderCancelledEmail(data: {
+  to: string;
+  customerName: string;
+  orderNumber: string;
+  reason?: string;
+}): Promise<boolean> {
+  return sendOrderStatusEmail({
+    to: data.to,
+    customerName: data.customerName,
+    orderNumber: data.orderNumber,
+    status: "CANCELLED",
+    statusLabel: "Cancelado",
+    message: data.reason
+      ? `Seu pedido foi cancelado. Motivo: ${data.reason}`
+      : "Seu pedido foi cancelado. Entre em contato conosco se tiver dúvidas.",
+  });
+}
+
+export async function sendAdminNewOrderEmail(data: {
+  adminEmail: string;
+  customerName: string;
+  orderNumber: string;
+  total: number;
+  paymentMethod: string;
+  items: { title: string; quantity: number; price: number }[];
+}): Promise<boolean> {
+  const itemsHtml = data.items
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${item.title}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:center;">${item.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const paymentLabels: Record<string, string> = {
+    pix: "PIX",
+    credit_card: "Cartão de crédito",
+    boleto: "Boleto bancário",
+  };
+
+  const html = emailLayout(`
+    <h2 style="margin:0 0 16px;color:#1f2937;font-size:22px;">
+      Novo pedido recebido 🛍️
+    </h2>
+    <p style="color:#4b5563;font-size:15px;line-height:1.6;">
+      Um novo pedido foi realizado por <strong>${data.customerName}</strong>.
+    </p>
+
+    <div style="background:#fdf2f8;border-radius:12px;padding:20px;margin:24px 0;">
+      <p style="margin:0 0 12px;font-size:14px;color:#6b7280;">
+        Pedido: <strong style="color:#1f2937;">#${data.orderNumber}</strong> &nbsp;|&nbsp;
+        Pagamento: <strong style="color:#1f2937;">${paymentLabels[data.paymentMethod] || data.paymentMethod}</strong>
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#374151;">
+        <thead>
+          <tr style="border-bottom:2px solid #f9a8d4;">
+            <th style="padding:8px 0;text-align:left;">Produto</th>
+            <th style="padding:8px 0;text-align:center;">Qtd</th>
+            <th style="padding:8px 0;text-align:right;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" style="padding:12px 0;font-weight:bold;font-size:16px;">Total</td>
+            <td style="padding:12px 0;text-align:right;font-weight:bold;font-size:16px;color:#ec4899;">
+              ${formatCurrency(data.total)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <p style="color:#6b7280;font-size:14px;">
+      <a href="${baseUrl}/admin/orders" style="background:#ec4899;color:#ffffff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+        Ver pedido no painel admin
+      </a>
+    </p>
+  `);
+
+  return sendEmail({
+    to: data.adminEmail,
+    subject: `[Admin] Novo pedido #${data.orderNumber} — ${formatCurrency(data.total)}`,
+    html,
   });
 }

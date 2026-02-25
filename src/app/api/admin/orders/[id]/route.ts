@@ -2,6 +2,27 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
+import {
+  sendOrderStatusEmail,
+  sendOrderCancelledEmail,
+  sendShippingNotificationEmail,
+} from "@/lib/email";
+
+const STATUS_LABELS: Record<string, string> = {
+  PAID: "Pago",
+  PROCESSING: "Em preparação",
+  SHIPPED: "Enviado",
+  DELIVERED: "Entregue",
+  CANCELLED: "Cancelado",
+};
+
+const STATUS_MESSAGES: Record<string, string> = {
+  PAID: "Seu pagamento foi confirmado e o pedido está sendo preparado.",
+  PROCESSING: "Seu pedido está sendo preparado para envio.",
+  SHIPPED: "Seu pedido foi enviado e está a caminho!",
+  DELIVERED: "Seu pedido foi entregue. Obrigada pela compra! 💕",
+  CANCELLED: "Seu pedido foi cancelado. Entre em contato se tiver dúvidas.",
+};
 
 export async function GET(
   request: NextRequest,
@@ -96,6 +117,42 @@ export async function PUT(
 
       return updatedOrder;
     });
+
+    // Enviar e-mail ao cliente em background quando status ou tracking muda
+    const customer = updated.user;
+    if (customer?.email) {
+      const newStatus = status && status !== order.status ? status : null;
+      const newTracking =
+        trackingCode !== undefined && trackingCode !== order.trackingCode ? trackingCode : null;
+
+      if (newStatus === "CANCELLED") {
+        sendOrderCancelledEmail({
+          to: customer.email,
+          customerName: customer.name,
+          orderNumber: updated.orderNumber,
+        }).catch((err) => console.error("[Email] Cancelamento falhou:", err));
+      } else if (
+        (newStatus === "SHIPPED" || (!newStatus && updated.status === "SHIPPED")) &&
+        newTracking
+      ) {
+        // Status virou SHIPPED e/ou tracking code foi adicionado
+        sendShippingNotificationEmail({
+          to: customer.email,
+          customerName: customer.name,
+          orderNumber: updated.orderNumber,
+          trackingCode: newTracking,
+        }).catch((err) => console.error("[Email] Envio com rastreio falhou:", err));
+      } else if (newStatus && STATUS_LABELS[newStatus]) {
+        sendOrderStatusEmail({
+          to: customer.email,
+          customerName: customer.name,
+          orderNumber: updated.orderNumber,
+          status: newStatus,
+          statusLabel: STATUS_LABELS[newStatus],
+          message: STATUS_MESSAGES[newStatus] || `Status atualizado para ${STATUS_LABELS[newStatus]}.`,
+        }).catch((err) => console.error("[Email] Status update falhou:", err));
+      }
+    }
 
     return successResponse(updated);
   } catch (error) {

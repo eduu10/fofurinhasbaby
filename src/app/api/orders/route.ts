@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
 import { generateOrderNumber } from "@/lib/utils";
+import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -213,6 +214,39 @@ export async function POST(request: NextRequest) {
 
       return newOrder;
     });
+
+    // Enviar e-mails em background (sem bloquear a resposta)
+    const emailItems = orderItems.map((item) => ({
+      title: item.title,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    // E-mail de confirmação para o cliente
+    sendOrderConfirmationEmail({
+      to: user.email,
+      customerName: user.name,
+      orderNumber: order.orderNumber,
+      total: Number(order.total),
+      items: emailItems,
+    }).catch((err) => console.error("[Email] Confirmação de pedido falhou:", err));
+
+    // E-mail de novo pedido para o admin
+    prisma.user
+      .findFirst({ where: { role: "ADMIN" }, select: { email: true } })
+      .then((admin) => {
+        if (admin) {
+          sendAdminNewOrderEmail({
+            adminEmail: admin.email,
+            customerName: user.name,
+            orderNumber: order.orderNumber,
+            total: Number(order.total),
+            paymentMethod: paymentMethod || "pix",
+            items: emailItems,
+          }).catch((err) => console.error("[Email] Notificação admin falhou:", err));
+        }
+      })
+      .catch((err) => console.error("[Email] Busca admin falhou:", err));
 
     return successResponse(order, 201);
   } catch (error) {
