@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const data = result.data as Record<string, unknown>;
+    const data = result.data as unknown as Record<string, unknown>;
     const access_token = String(data.access_token || "");
     const refresh_token = String(data.refresh_token || "");
     const expire_time = String(data.expire_time || "");
