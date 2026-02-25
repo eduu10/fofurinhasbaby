@@ -3,6 +3,8 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FloatingCart } from "@/components/layout/floating-cart";
 import { ToastProvider } from "@/components/ui/toast-provider";
+import { SalesNotification } from "@/components/SalesNotification";
+import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 
 async function getStoreSettings() {
   try {
@@ -40,6 +42,8 @@ export default async function StoreLayout({
         contactHours={settings.contactHours}
       />
       <FloatingCart />
+      <SalesNotification />
+      <ExitIntentPopup />
     </div>
   );
 }

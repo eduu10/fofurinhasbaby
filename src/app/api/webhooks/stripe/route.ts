@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { createDropshippingOrder, isAliExpressConfigured } from "@/lib/aliexpress";
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from "@/lib/email";
+import { processDropshipOrder } from "@/lib/orders/dropship";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
@@ -184,6 +185,14 @@ async function handlePaymentSuccess(event: Stripe.Event) {
   } catch (error) {
     console.error(`Failed to auto-create AE order for ${orderId}:`, error);
     // Pedido continua como PAID - admin pode enviar manualmente
+  }
+
+  // Processar pedido via sistema de dropshipping híbrido
+  // Gera links de afiliado e envia email ao admin com instruções de compra
+  try {
+    await processDropshipOrder(orderId);
+  } catch (error) {
+    console.error(`[Dropship] Erro ao processar pedido ${orderId}:`, error);
   }
 }
 

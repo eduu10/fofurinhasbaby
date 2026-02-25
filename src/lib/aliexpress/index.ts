@@ -13,6 +13,12 @@ export {
   convertToBrl,
 } from "./clients";
 
+// Hybrid Client (Omkar + ae_sdk + Cache)
+export {
+  AliExpressHybridClient,
+  getHybridClient,
+} from "./client";
+
 // Products
 export {
   getProductDetails,
@@ -36,6 +42,13 @@ export {
   getAffiliateFeaturedProducts,
 } from "./affiliate";
 
+// Transformer
+export {
+  transformToProduct,
+  detectCategory,
+  findOrDetectCategory,
+} from "./transformer";
+
 // Types
 export type {
   AEProduct,
@@ -47,4 +60,10 @@ export type {
   AEOrderStatus,
   ProductSearchFilters,
   PaginatedResult,
+  OmkarProductData,
+  OmkarSearchResult,
+  OmkarSearchItem,
+  HybridProductData,
+  HybridVariation,
+  HybridSearchResult,
 } from "./types";

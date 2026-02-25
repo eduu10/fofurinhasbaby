@@ -115,18 +115,32 @@ model Product {
   aliexpressId     String?
   autoSync         Boolean       @default(false)
   profitMargin     Decimal?      @db.Decimal(5, 2)
+
+  // Campos do sistema híbrido de dropshipping
+  aliexpressProductId  String?
+  affiliateUrl         String?
+  costPriceUSD         Float?
+  exchangeRateAtImport Float?
+  syncPrice            Boolean   @default(true)
+  outOfStock           Boolean   @default(false)
+  lastSyncAt           DateTime?
+  omkarProductData     Json?
+  needsTranslation     Boolean   @default(false)
+
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  images     ProductImage[]
-  variations ProductVariation[]
-  orderItems OrderItem[]
-  reviews    Review[]
-  cartItems  CartItem[]
+  images       ProductImage[]
+  variations   ProductVariation[]
+  orderItems   OrderItem[]
+  reviews      Review[]
+  cartItems    CartItem[]
+  priceHistory PriceHistory[]
 
   @@index([categoryId])
   @@index([isActive, isDraft])
   @@index([slug])
+  @@index([aliexpressProductId])
   @@map("products")
 }
 
@@ -211,11 +225,12 @@ model Order {
   createdAt          DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  user    User       @relation(fields: [userId], references: [id])
-  address Address    @relation(fields: [addressId], references: [id])
-  coupon  Coupon?    @relation(fields: [couponId], references: [id])
-  items   OrderItem[]
-  history OrderHistory[]
+  user         User               @relation(fields: [userId], references: [id])
+  address      Address            @relation(fields: [addressId], references: [id])
+  coupon       Coupon?            @relation(fields: [couponId], references: [id])
+  items        OrderItem[]
+  history      OrderHistory[]
+  dropshipInfo OrderDropshipInfo?
 
   @@index([userId])
   @@index([status])
@@ -312,4 +327,51 @@ model StoreSetting {
   value String
 
   @@map("store_settings")
+}
+
+// ============ API USAGE (Rate Limiting Omkar) ============
+
+model ApiUsage {
+  id           String   @id @default(cuid())
+  service      String
+  month        String
+  requestCount Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@unique([service, month])
+  @@map("api_usage")
+}
+
+// ============ PRICE HISTORY ============
+
+model PriceHistory {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  costUSD      Float
+  sellBRL      Float
+  exchangeRate Float
+  recordedAt   DateTime @default(now())
+
+  @@index([productId])
+  @@map("price_history")
+}
+
+// ============ ORDERS — campos adicionais para dropshipping ============
+
+model OrderDropshipInfo {
+  id                String   @id @default(cuid())
+  orderId           String   @unique
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  affiliateUrl      String?
+  purchaseUrl       String?
+  aliexpressStatus  String?
+  purchasedAt       DateTime?
+  costTotalUSD      Float?
+  estimatedMarginBRL Float?
+  adminNotes        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("order_dropship_info")
 }
