@@ -62,27 +62,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const {
-      access_token,
-      refresh_token,
-      expire_time,
-      refresh_token_valid_time,
-      seller_id,
-      user_nick,
-    } = result.data;
+    const data = result.data as Record<string, unknown>;
+    const access_token = String(data.access_token || "");
+    const refresh_token = String(data.refresh_token || "");
+    const expire_time = String(data.expire_time || "");
+    const refresh_token_valid_time = String(data.refresh_token_valid_time || "");
+    const seller_id = String(data.seller_id || "");
+    const user_nick = String(data.user_nick || "");
+
+    if (!access_token) {
+      return new NextResponse(
+        renderHTML(
+          "Token Não Recebido",
+          "A autorização foi aceita mas o AliExpress não retornou um access_token. Tente novamente.",
+          true,
+        ),
+        { status: 502, headers: { "Content-Type": "text/html; charset=utf-8" } },
+      );
+    }
 
     // Persist tokens in StoreSetting (upsert each key)
     const settings: Record<string, string> = {
       aliexpress_access_token: access_token,
       aliexpress_refresh_token: refresh_token,
-      aliexpress_token_expire: String(expire_time),
-      aliexpress_refresh_expire: String(refresh_token_valid_time),
-      aliexpress_seller_id: seller_id ?? "",
-      aliexpress_user_nick: user_nick ?? "",
+      aliexpress_token_expire: expire_time,
+      aliexpress_refresh_expire: refresh_token_valid_time,
+      aliexpress_seller_id: seller_id,
+      aliexpress_user_nick: user_nick,
     };
 
+    // Filter out empty values before upserting
+    const entries = Object.entries(settings).filter(([, v]) => v !== "" && v !== "undefined");
+
     await Promise.all(
-      Object.entries(settings).map(([key, value]) =>
+      entries.map(([key, value]) =>
         prisma.storeSetting.upsert({
           where: { key },
           update: { value },
@@ -94,7 +107,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(
       renderHTML(
         "Autorização Concluída!",
-        `Sua conta AliExpress (${user_nick || seller_id || "seller"}) foi conectada com sucesso. Os tokens foram salvos no banco de dados. Você já pode fechar esta página.`,
+        `Sua conta AliExpress (${user_nick || seller_id || "seller"}) foi conectada com sucesso. O access_token foi salvo. Você já pode fechar esta página e testar a conexão no painel admin.`,
         false,
       ),
       { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
