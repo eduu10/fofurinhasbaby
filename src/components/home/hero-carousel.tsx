@@ -23,7 +23,7 @@ const slides = [
     description:
       "Brinquedos educativos e seguros que estimulam o desenvolvimento do seu pequeno. Qualidade que voce pode confiar.",
     image:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e0?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&q=80&w=800",
     cta: "VER BRINQUEDOS",
     ctaLink: "/products?category=brinquedos",
   },
