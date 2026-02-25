@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  *
  * Callback URL for AliExpress OAuth authorization.
  * Receives the authorization code, exchanges it for an access token
- * using the AliExpress TOP API directly (no SDK dependency),
+ * using the AliExpress REST API (/rest/auth/token/create),
  * and persists the tokens in the database (StoreSetting).
  */
 export async function GET(request: NextRequest) {
@@ -40,48 +40,59 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Build the token request using AliExpress TOP API directly
-    const apiParams: Record<string, string> = {
+    // Replicate exactly what ae_sdk does for /auth/token/create
+    const apiPath = "/auth/token/create";
+
+    // These are the params ae_sdk sends (including method for signing)
+    const allParams: Record<string, string> = {
+      method: apiPath,
+      session: "",
       app_key: appKey,
-      method: "/auth/token/create",
-      sign_method: "hmac",
-      timestamp: new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "").slice(0, 19),
-      v: "2.0",
+      simplify: "true",
+      sign_method: "sha256",
+      timestamp: Date.now().toString(),
       code,
     };
 
-    // Generate HMAC signature
-    const sortedKeys = Object.keys(apiParams).sort();
-    const signStr = sortedKeys.map((k) => `${k}${apiParams[k]}`).join("");
+    // Generate signature: for OP API (method contains "/"),
+    // basestring = method + sorted remaining params
+    const signParams = { ...allParams };
+    let basestring = signParams.method;
+    delete signParams.method;
+
+    basestring += Object.entries(signParams)
+      .filter(([, value]) => value != null)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .reduce((acc, [key, value]) => acc + key + String(value), "");
+
     const sign = crypto
       .createHmac("sha256", appSecret)
-      .update(signStr)
+      .update(basestring, "utf-8")
       .digest("hex")
       .toUpperCase();
 
-    apiParams.sign = sign;
+    // Build URL: for OP API, method is in the path, not in query params
+    const queryParams = { ...allParams };
+    delete queryParams.method;
+    queryParams.sign = sign;
 
-    // Call AliExpress TOP gateway
-    const qs = new URLSearchParams(apiParams).toString();
-    const apiUrl = `https://api-sg.aliexpress.com/sync?${qs}`;
+    const qs = Object.entries(queryParams)
+      .filter(([, value]) => value != null)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+      .join("&");
+
+    const apiUrl = `https://api-sg.aliexpress.com/rest${apiPath}?${qs}`;
 
     const res = await fetch(apiUrl, { method: "POST" });
     const json = await res.json();
 
-    // The response may be nested under different keys
-    const data =
-      json.access_token
-        ? json
-        : json["aliexpress_open_auth_token_create_response"]
-          ? json["aliexpress_open_auth_token_create_response"]
-          : json;
-
-    const access_token = String(data.access_token || "");
-    const refresh_token = String(data.refresh_token || "");
-    const expire_time = String(data.expire_time || "");
-    const refresh_token_valid_time = String(data.refresh_token_valid_time || "");
-    const seller_id = String(data.seller_id || data.user_id || "");
-    const user_nick = String(data.user_nick || "");
+    const access_token = String(json.access_token || "");
+    const refresh_token = String(json.refresh_token || "");
+    const expire_time = String(json.expire_time || "");
+    const refresh_token_valid_time = String(json.refresh_token_valid_time || "");
+    const seller_id = String(json.user_id || json.seller_id || "");
+    const user_nick = String(json.user_nick || "");
 
     if (!access_token) {
       const debugInfo = JSON.stringify(json, null, 2);
