@@ -11,10 +11,10 @@ interface ImportedProduct {
   id: string;
   title: string;
   description: string;
-  price: string;
-  costPrice: string;
+  price: number;
+  costPrice: number;
   images: { url: string }[];
-  variations: { name: string; value: string; price: string }[];
+  variations: { name: string; value: string; price?: number | null }[];
 }
 
 export default function ImportProductPage() {
@@ -45,7 +45,16 @@ export default function ImportProductPage() {
 
       const json = await res.json();
       if (json.success) {
-        setImported(json.data);
+        const product = json.data.product;
+        setImported({
+          id: product.id,
+          title: product.title,
+          description: product.description || "",
+          price: product.price,
+          costPrice: product.costPrice || 0,
+          images: product.images || [],
+          variations: product.variations || [],
+        });
         toast.success("Produto importado como rascunho!");
       } else {
         toast.error(json.error || "Erro ao importar produto");
@@ -206,7 +215,7 @@ export default function ImportProductPage() {
                 </div>
               </div>
 
-              {imported.variations.length > 0 && (
+              {imported.variations && imported.variations.length > 0 && (
                 <div className="mt-4">
                   <p className="mb-2 text-sm font-medium text-gray-700">
                     Variações:
