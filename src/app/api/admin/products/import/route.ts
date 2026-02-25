@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
 import { slugify } from "@/lib/utils";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 
 interface ScrapedProduct {
@@ -19,12 +18,11 @@ interface ScrapedProduct {
 }
 
 /**
- * Download an image from a URL and save it locally.
- * Returns the local URL path (e.g., /uploads/uuid.jpg).
+ * Download an image from URL and upload to Vercel Blob.
+ * Returns the blob URL.
  */
-async function downloadAndSaveImage(imageUrl: string): Promise<string | null> {
+async function downloadAndUploadImage(imageUrl: string): Promise<string | null> {
   try {
-    // Normalize URL
     let finalUrl = imageUrl;
     if (finalUrl.startsWith("//")) {
       finalUrl = `https:${finalUrl}`;
@@ -56,12 +54,6 @@ async function downloadAndSaveImage(imageUrl: string): Promise<string | null> {
       if (ext === "jpeg") ext = "jpg";
     }
 
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-
-    const filename = `${randomUUID()}.${ext}`;
-    const filepath = join(uploadsDir, filename);
-
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -71,11 +63,18 @@ async function downloadAndSaveImage(imageUrl: string): Promise<string | null> {
       return null;
     }
 
-    await writeFile(filepath, buffer);
+    const filename = `products/${randomUUID()}.${ext}`;
 
-    return `/uploads/${filename}`;
+    // Upload to Vercel Blob
+    const blob = await put(filename, buffer, {
+      access: "public",
+      addRandomSuffix: false,
+      contentType: contentType,
+    });
+
+    return blob.url;
   } catch (error) {
-    console.error(`Error downloading image: ${imageUrl}`, error);
+    console.error(`Error downloading/uploading image: ${imageUrl}`, error);
     return null;
   }
 }
@@ -133,7 +132,7 @@ async function fetchAliExpressHtml(url: string, aliexpressId: string): Promise<s
 /**
  * Extract data from AliExpress HTML.
  */
-function extractFromHtml(html: string, aliexpressId: string): {
+function extractFromHtml(html: string): {
   title: string;
   description: string;
   images: { url: string; alt: string }[];
@@ -179,7 +178,7 @@ function extractFromHtml(html: string, aliexpressId: string): {
     } catch { /* fallback */ }
   }
 
-  // Strategy 2: individual alicdn.com URLs from kf/ pattern (product images)
+  // Strategy 2: individual alicdn.com URLs from kf/ pattern
   if (images.length === 0) {
     const kfPattern = /https?:\/\/ae\d+\.alicdn\.com\/kf\/[A-Za-z0-9]+\.(jpg|jpeg|png|webp)/gi;
     const kfMatches = html.matchAll(kfPattern);
@@ -194,7 +193,7 @@ function extractFromHtml(html: string, aliexpressId: string): {
     }
   }
 
-  // Strategy 3: any alicdn.com image URL
+  // Strategy 3: any alicdn.com image URL with /kf/
   if (images.length === 0) {
     const alicdnPattern = /https?:\/\/[^"'\s,]+\.alicdn\.com\/[^"'\s,]+\.(jpg|jpeg|png|webp)/gi;
     const allMatches = html.matchAll(alicdnPattern);
@@ -282,7 +281,7 @@ function extractFromHtml(html: string, aliexpressId: string): {
 
 /**
  * Real AliExpress product scraper.
- * Fetches the product page HTML, extracts data, and downloads images locally.
+ * Fetches the product page HTML, extracts data, and uploads images to Vercel Blob.
  */
 async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
   const idMatch = url.match(/\/(\d+)\.html/) || url.match(/item\/(\d+)/);
@@ -295,7 +294,7 @@ async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
       throw new Error("Could not fetch AliExpress page");
     }
 
-    const extracted = extractFromHtml(html, aliexpressId);
+    const extracted = extractFromHtml(html);
 
     const title = extracted.title || `Produto AliExpress ${aliexpressId}`;
     const description = extracted.description || "Produto importado do AliExpress. Confira as imagens e detalhes.";
@@ -306,14 +305,14 @@ async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
       ? parseFloat((extracted.costPriceUSD * usdToBrl).toFixed(2))
       : parseFloat((Math.random() * 45 + 15).toFixed(2));
 
-    // Download images locally
+    // Download images from AliExpress CDN and upload to Vercel Blob
     let localImages: { url: string; alt: string }[] = [];
     if (extracted.images.length > 0) {
       console.log(`Downloading ${extracted.images.length} images from AliExpress CDN...`);
-      const downloadPromises = extracted.images.map(async (img, i) => {
-        const localUrl = await downloadAndSaveImage(img.url);
-        if (localUrl) {
-          return { url: localUrl, alt: img.alt };
+      const downloadPromises = extracted.images.map(async (img) => {
+        const blobUrl = await downloadAndUploadImage(img.url);
+        if (blobUrl) {
+          return { url: blobUrl, alt: img.alt };
         }
         return null;
       });
@@ -371,7 +370,7 @@ export async function POST(request: NextRequest) {
 
     const profitMargin = customMargin || 40;
 
-    // Scrape the AliExpress product page and download images
+    // Scrape the AliExpress product page and upload images
     const scraped = await scrapeAliExpressProduct(url);
 
     // Calculate selling price with profit margin
@@ -438,7 +437,7 @@ export async function POST(request: NextRequest) {
           costPrice: scraped.costPrice,
           sellingPrice,
           profitMargin,
-          imagesDownloaded: scraped.images.filter(img => img.url.startsWith("/uploads/")).length,
+          imagesDownloaded: scraped.images.filter(img => !img.url.includes("placehold.co")).length,
           totalImages: scraped.images.length,
           message:
             "Produto importado como rascunho. Revise e ative quando pronto.",

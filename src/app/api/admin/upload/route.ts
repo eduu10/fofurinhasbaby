@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 
 export async function POST(request: NextRequest) {
@@ -32,22 +31,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-
-    // Generate unique filename
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `${randomUUID()}.${ext}`;
-    const filepath = join(uploadsDir, filename);
+    const filename = `products/${randomUUID()}.${ext}`;
 
-    // Write file
-    const bytes = await file.arrayBuffer();
-    await writeFile(filepath, Buffer.from(bytes));
+    // Upload to Vercel Blob
+    const blob = await put(filename, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
 
-    const url = `/uploads/${filename}`;
-
-    return NextResponse.json({ success: true, url });
+    return NextResponse.json({ success: true, url: blob.url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
