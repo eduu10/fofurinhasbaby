@@ -87,6 +87,16 @@ export async function PUT(
       variations,
     } = body;
 
+    // Normalize empty strings to null for optional fields
+    const normalizedCategoryId = categoryId && categoryId.trim() !== "" ? categoryId : null;
+    const normalizedSku = sku && sku.trim() !== "" ? sku : null;
+    const normalizedCompareAtPrice = compareAtPrice != null && compareAtPrice !== "" && !isNaN(Number(compareAtPrice)) ? Number(compareAtPrice) : null;
+    const normalizedCostPrice = costPrice != null && costPrice !== "" && !isNaN(Number(costPrice)) ? Number(costPrice) : null;
+    const normalizedWeight = weight != null && weight !== "" && !isNaN(Number(weight)) ? Number(weight) : null;
+    const normalizedWidth = width != null && width !== "" && !isNaN(Number(width)) ? Number(width) : null;
+    const normalizedHeight = height != null && height !== "" && !isNaN(Number(height)) ? Number(height) : null;
+    const normalizedLength = length != null && length !== "" && !isNaN(Number(length)) ? Number(length) : null;
+
     let newSlug = product.slug;
     if (title && title !== product.title) {
       newSlug = slugify(title);
@@ -123,6 +133,14 @@ export async function PUT(
             variationId: { not: null },
           },
         });
+        // Unlink order items from old variations (set variationId to null)
+        await tx.orderItem.updateMany({
+          where: {
+            productId: id,
+            variationId: { not: null },
+          },
+          data: { variationId: null },
+        });
         await tx.productVariation.deleteMany({ where: { productId: id } });
         if (variations.length > 0) {
           await tx.productVariation.createMany({
@@ -148,28 +166,28 @@ export async function PUT(
           slug: newSlug,
           description: description ?? undefined,
           shortDescription: shortDescription ?? undefined,
-          sku: sku ?? undefined,
-          price: price ?? undefined,
-          compareAtPrice: compareAtPrice ?? undefined,
-          costPrice: costPrice ?? undefined,
-          stock: stock ?? undefined,
-          minQuantity: minQuantity ?? undefined,
-          maxQuantity: maxQuantity ?? undefined,
+          sku: normalizedSku,
+          price: price != null && !isNaN(Number(price)) ? Number(price) : undefined,
+          compareAtPrice: normalizedCompareAtPrice,
+          costPrice: normalizedCostPrice,
+          stock: stock != null ? Number(stock) : undefined,
+          minQuantity: minQuantity != null ? Number(minQuantity) : undefined,
+          maxQuantity: maxQuantity != null ? Number(maxQuantity) : undefined,
           showStock: showStock ?? undefined,
-          categoryId: categoryId ?? undefined,
+          categoryId: normalizedCategoryId,
           isActive: isActive ?? undefined,
           isDraft: isDraft ?? undefined,
           isFeatured: isFeatured ?? undefined,
-          weight: weight ?? undefined,
-          width: width ?? undefined,
-          height: height ?? undefined,
-          length: length ?? undefined,
+          weight: normalizedWeight,
+          width: normalizedWidth,
+          height: normalizedHeight,
+          length: normalizedLength,
           metaTitle: metaTitle ?? undefined,
           metaDescription: metaDescription ?? undefined,
           aliexpressUrl: aliexpressUrl ?? undefined,
           aliexpressId: aliexpressId ?? undefined,
           autoSync: autoSync ?? undefined,
-          profitMargin: profitMargin ?? undefined,
+          profitMargin: profitMargin != null && !isNaN(Number(profitMargin)) ? Number(profitMargin) : undefined,
         },
         include: {
           images: { orderBy: { sortOrder: "asc" } },
@@ -188,7 +206,8 @@ export async function PUT(
       return errorResponse("Acesso negado", 403);
     }
     console.error("Admin update product error:", error);
-    return errorResponse("Erro ao atualizar produto", 500);
+    const errorMsg = error instanceof Error ? error.message : "Erro ao atualizar produto";
+    return errorResponse(errorMsg, 500);
   }
 }
 

@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
 import { slugify } from "@/lib/utils";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { randomUUID } from "crypto";
 
 interface ScrapedProduct {
   aliexpressId: string;
@@ -16,10 +19,71 @@ interface ScrapedProduct {
 }
 
 /**
+ * Download an image from a URL and save it locally.
+ * Returns the local URL path (e.g., /uploads/uuid.jpg).
+ */
+async function downloadAndSaveImage(imageUrl: string): Promise<string | null> {
+  try {
+    // Normalize URL
+    let finalUrl = imageUrl;
+    if (finalUrl.startsWith("//")) {
+      finalUrl = `https:${finalUrl}`;
+    }
+
+    const res = await fetch(finalUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "image/*",
+        Referer: "https://www.aliexpress.com/",
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to download image: ${res.status} ${finalUrl}`);
+      return null;
+    }
+
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    let ext = "jpg";
+    if (contentType.includes("png")) ext = "png";
+    else if (contentType.includes("webp")) ext = "webp";
+    else if (contentType.includes("gif")) ext = "gif";
+
+    // Also check URL extension
+    const urlExt = finalUrl.match(/\.(jpg|jpeg|png|webp|gif)(\?|$)/i);
+    if (urlExt) {
+      ext = urlExt[1].toLowerCase();
+      if (ext === "jpeg") ext = "jpg";
+    }
+
+    const uploadsDir = join(process.cwd(), "public", "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+
+    const filename = `${randomUUID()}.${ext}`;
+    const filepath = join(uploadsDir, filename);
+
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Only save if we got actual image data (more than 1KB)
+    if (buffer.length < 1024) {
+      console.error(`Image too small (${buffer.length} bytes), skipping: ${finalUrl}`);
+      return null;
+    }
+
+    await writeFile(filepath, buffer);
+
+    return `/uploads/${filename}`;
+  } catch (error) {
+    console.error(`Error downloading image: ${imageUrl}`, error);
+    return null;
+  }
+}
+
+/**
  * Fetch HTML from AliExpress with multiple URL variations and headers.
  */
 async function fetchAliExpressHtml(url: string, aliexpressId: string): Promise<string> {
-  // Try multiple URL formats to bypass redirects/blocks
   const urlVariants = [
     url,
     `https://www.aliexpress.com/item/${aliexpressId}.html`,
@@ -54,7 +118,6 @@ async function fetchAliExpressHtml(url: string, aliexpressId: string): Promise<s
       });
       if (res.ok) {
         const html = await res.text();
-        // Check if we got actual product content (not a captcha/redirect page)
         if (html.includes("alicdn.com") || html.includes("imagePathList") || html.includes("og:title")) {
           return html;
         }
@@ -219,7 +282,7 @@ function extractFromHtml(html: string, aliexpressId: string): {
 
 /**
  * Real AliExpress product scraper.
- * Fetches the product page HTML and extracts data from embedded JSON/meta tags.
+ * Fetches the product page HTML, extracts data, and downloads images locally.
  */
 async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
   const idMatch = url.match(/\/(\d+)\.html/) || url.match(/item\/(\d+)/);
@@ -243,8 +306,23 @@ async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
       ? parseFloat((extracted.costPriceUSD * usdToBrl).toFixed(2))
       : parseFloat((Math.random() * 45 + 15).toFixed(2));
 
-    const images = extracted.images.length > 0
-      ? extracted.images
+    // Download images locally
+    let localImages: { url: string; alt: string }[] = [];
+    if (extracted.images.length > 0) {
+      console.log(`Downloading ${extracted.images.length} images from AliExpress CDN...`);
+      const downloadPromises = extracted.images.map(async (img, i) => {
+        const localUrl = await downloadAndSaveImage(img.url);
+        if (localUrl) {
+          return { url: localUrl, alt: img.alt };
+        }
+        return null;
+      });
+      const results = await Promise.all(downloadPromises);
+      localImages = results.filter((r): r is { url: string; alt: string } => r !== null);
+    }
+
+    const images = localImages.length > 0
+      ? localImages
       : [{ url: `https://placehold.co/800x800/FFB6C1/333333?text=Sem+Imagem`, alt: title }];
 
     const totalStock = extracted.variations.length > 0
@@ -293,7 +371,7 @@ export async function POST(request: NextRequest) {
 
     const profitMargin = customMargin || 40;
 
-    // Scrape the AliExpress product page
+    // Scrape the AliExpress product page and download images
     const scraped = await scrapeAliExpressProduct(url);
 
     // Calculate selling price with profit margin
@@ -360,6 +438,8 @@ export async function POST(request: NextRequest) {
           costPrice: scraped.costPrice,
           sellingPrice,
           profitMargin,
+          imagesDownloaded: scraped.images.filter(img => img.url.startsWith("/uploads/")).length,
+          totalImages: scraped.images.length,
           message:
             "Produto importado como rascunho. Revise e ative quando pronto.",
         },

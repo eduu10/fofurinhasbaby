@@ -130,10 +130,12 @@ export default function EditProductPage({
           ? parseFloat(form.compareAtPrice)
           : null,
         costPrice: form.costPrice ? parseFloat(form.costPrice) : null,
-        stock: parseInt(form.stock),
-        minQuantity: parseInt(form.minQuantity),
-        maxQuantity: parseInt(form.maxQuantity),
+        stock: parseInt(form.stock) || 0,
+        minQuantity: parseInt(form.minQuantity) || 1,
+        maxQuantity: parseInt(form.maxQuantity) || 99,
         weight: form.weight ? parseFloat(form.weight) : null,
+        categoryId: form.categoryId || null,
+        sku: form.sku || null,
         images: imageUrls
           .filter((url) => url.trim())
           .map((url, i) => ({ url, sortOrder: i })),
@@ -240,6 +242,16 @@ export default function EditProductPage({
         {/* Images */}
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-gray-800">Imagens</h2>
+          {/* Image previews */}
+          {imageUrls.some((u) => u.trim()) && (
+            <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+              {imageUrls.filter((u) => u.trim()).map((url, i) => (
+                <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <img src={url} alt={`Imagem ${i + 1}`} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/200x200/f3f4f6/999?text=Erro"; }} />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="space-y-3">
             {imageUrls.map((url, index) => (
               <div key={index} className="flex gap-2">
