@@ -116,6 +116,13 @@ export async function PUT(
 
       // Update variations if provided
       if (variations !== undefined) {
+        // Clear cart items referencing old variations to avoid FK constraint errors
+        await tx.cartItem.deleteMany({
+          where: {
+            productId: id,
+            variationId: { not: null },
+          },
+        });
         await tx.productVariation.deleteMany({ where: { productId: id } });
         if (variations.length > 0) {
           await tx.productVariation.createMany({
@@ -124,10 +131,10 @@ export async function PUT(
                 productId: id,
                 name: v.name,
                 value: v.value,
-                price: v.price,
+                price: v.price || null,
                 stock: v.stock || 0,
-                sku: v.sku,
-                image: v.image,
+                sku: v.sku || null,
+                image: v.image || null,
               })
             ),
           });

@@ -140,7 +140,6 @@ export default function EditProductPage({
         variations: variations
           .filter((v) => v.name && v.value)
           .map((v) => ({
-            id: v.id,
             name: v.name,
             value: v.value,
             price: v.price ? parseFloat(v.price) : null,
