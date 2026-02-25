@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
-import { randomUUID } from "crypto";
+import { uploadFileToStorage } from "@/lib/storage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,15 +31,17 @@ export async function POST(request: NextRequest) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `products/${randomUUID()}.${ext}`;
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
+    const url = await uploadFileToStorage(file, ext);
 
-    return NextResponse.json({ success: true, url: blob.url });
+    if (!url) {
+      return NextResponse.json(
+        { success: false, error: "Storage nao configurado. Configure BLOB_READ_WRITE_TOKEN na Vercel." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

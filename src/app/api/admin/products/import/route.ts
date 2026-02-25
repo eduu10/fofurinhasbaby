@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api";
 import { slugify } from "@/lib/utils";
-import { put } from "@vercel/blob";
-import { randomUUID } from "crypto";
+import { uploadToStorage } from "@/lib/storage";
 
 interface ScrapedProduct {
   aliexpressId: string;
@@ -18,10 +17,10 @@ interface ScrapedProduct {
 }
 
 /**
- * Download an image from URL and upload to Vercel Blob.
- * Returns the blob URL.
+ * Download an image from URL and upload to storage (Vercel Blob).
+ * If storage is not configured, returns the original URL.
  */
-async function downloadAndUploadImage(imageUrl: string): Promise<string | null> {
+async function downloadAndRehost(imageUrl: string): Promise<string> {
   try {
     let finalUrl = imageUrl;
     if (finalUrl.startsWith("//")) {
@@ -38,7 +37,7 @@ async function downloadAndUploadImage(imageUrl: string): Promise<string | null> 
 
     if (!res.ok) {
       console.error(`Failed to download image: ${res.status} ${finalUrl}`);
-      return null;
+      return finalUrl; // Return original URL as fallback
     }
 
     const contentType = res.headers.get("content-type") || "image/jpeg";
@@ -47,7 +46,6 @@ async function downloadAndUploadImage(imageUrl: string): Promise<string | null> 
     else if (contentType.includes("webp")) ext = "webp";
     else if (contentType.includes("gif")) ext = "gif";
 
-    // Also check URL extension
     const urlExt = finalUrl.match(/\.(jpg|jpeg|png|webp|gif)(\?|$)/i);
     if (urlExt) {
       ext = urlExt[1].toLowerCase();
@@ -57,25 +55,22 @@ async function downloadAndUploadImage(imageUrl: string): Promise<string | null> 
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Only save if we got actual image data (more than 1KB)
     if (buffer.length < 1024) {
       console.error(`Image too small (${buffer.length} bytes), skipping: ${finalUrl}`);
-      return null;
+      return finalUrl;
     }
 
-    const filename = `products/${randomUUID()}.${ext}`;
+    // Try to upload to Vercel Blob
+    const blobUrl = await uploadToStorage(buffer, contentType, ext);
+    if (blobUrl) {
+      return blobUrl;
+    }
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, buffer, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: contentType,
-    });
-
-    return blob.url;
+    // If no blob storage, return the original CDN URL
+    return finalUrl;
   } catch (error) {
-    console.error(`Error downloading/uploading image: ${imageUrl}`, error);
-    return null;
+    console.error(`Error processing image: ${imageUrl}`, error);
+    return imageUrl; // Return original URL as fallback
   }
 }
 
@@ -281,7 +276,7 @@ function extractFromHtml(html: string): {
 
 /**
  * Real AliExpress product scraper.
- * Fetches the product page HTML, extracts data, and uploads images to Vercel Blob.
+ * Fetches the product page HTML, extracts data, downloads and re-hosts images.
  */
 async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
   const idMatch = url.match(/\/(\d+)\.html/) || url.match(/item\/(\d+)/);
@@ -305,23 +300,21 @@ async function scrapeAliExpressProduct(url: string): Promise<ScrapedProduct> {
       ? parseFloat((extracted.costPriceUSD * usdToBrl).toFixed(2))
       : parseFloat((Math.random() * 45 + 15).toFixed(2));
 
-    // Download images from AliExpress CDN and upload to Vercel Blob
-    let localImages: { url: string; alt: string }[] = [];
+    // Download and re-host images
+    let finalImages: { url: string; alt: string }[] = [];
     if (extracted.images.length > 0) {
-      console.log(`Downloading ${extracted.images.length} images from AliExpress CDN...`);
-      const downloadPromises = extracted.images.map(async (img) => {
-        const blobUrl = await downloadAndUploadImage(img.url);
-        if (blobUrl) {
-          return { url: blobUrl, alt: img.alt };
-        }
-        return null;
+      console.log(`Processing ${extracted.images.length} images...`);
+      const rehostPromises = extracted.images.map(async (img) => {
+        const newUrl = await downloadAndRehost(img.url);
+        return { url: newUrl, alt: img.alt };
       });
-      const results = await Promise.all(downloadPromises);
-      localImages = results.filter((r): r is { url: string; alt: string } => r !== null);
+      finalImages = await Promise.all(rehostPromises);
+      // Filter out any that failed completely
+      finalImages = finalImages.filter(img => img.url && img.url.length > 10);
     }
 
-    const images = localImages.length > 0
-      ? localImages
+    const images = finalImages.length > 0
+      ? finalImages
       : [{ url: `https://placehold.co/800x800/FFB6C1/333333?text=Sem+Imagem`, alt: title }];
 
     const totalStock = extracted.variations.length > 0
@@ -370,7 +363,7 @@ export async function POST(request: NextRequest) {
 
     const profitMargin = customMargin || 40;
 
-    // Scrape the AliExpress product page and upload images
+    // Scrape the AliExpress product page
     const scraped = await scrapeAliExpressProduct(url);
 
     // Calculate selling price with profit margin
@@ -437,7 +430,6 @@ export async function POST(request: NextRequest) {
           costPrice: scraped.costPrice,
           sellingPrice,
           profitMargin,
-          imagesDownloaded: scraped.images.filter(img => !img.url.includes("placehold.co")).length,
           totalImages: scraped.images.length,
           message:
             "Produto importado como rascunho. Revise e ative quando pronto.",
