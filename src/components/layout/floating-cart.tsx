@@ -26,7 +26,7 @@ export function FloatingCart() {
   return (
     <Link
       href="/cart"
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl bg-gradient-buy py-3 px-5 text-white font-display font-bold shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-105 active:scale-95 transition-all ${
+      className={`fixed bottom-24 right-6 z-50 flex items-center gap-3 rounded-2xl bg-gradient-buy py-3 px-5 text-white font-display font-bold shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-105 active:scale-95 transition-all ${
         animate ? "scale-110" : ""
       }`}
     >
