@@ -12,7 +12,7 @@ const slides = [
     description:
       "Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.",
     image:
-      "https://images.unsplash.com/photo-1515488042361-ee0065ab4d8b?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=80&w=800",
     cta: "VER OFERTAS",
     ctaLink: "/products",
   },
@@ -23,7 +23,7 @@ const slides = [
     description:
       "Brinquedos educativos e seguros que estimulam o desenvolvimento do seu pequeno. Qualidade que voce pode confiar.",
     image:
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e0?auto=format&fit=crop&q=80&w=800",
     cta: "VER BRINQUEDOS",
     ctaLink: "/products?category=brinquedos",
   },
@@ -34,7 +34,7 @@ const slides = [
     description:
       "Produtos de higiene delicados e seguros para a pele sensivel do seu bebe. Do banho ate a hora de dormir.",
     image:
-      "https://images.unsplash.com/photo-1544126592-807ade215a0b?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800",
     cta: "VER HIGIENE",
     ctaLink: "/products?category=higiene",
   },
@@ -178,6 +178,7 @@ export function HeroCarousel() {
               src={slide.image}
               alt="Bebe feliz"
               className="relative z-10 rounded-[3rem] shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500 w-full max-w-md mx-auto animate-fade-in-up"
+              onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/800x800/FFE4E1/FF69B4?text=Fofurinhas+Baby"; }}
             />
 
             {/* Navigation arrows */}
