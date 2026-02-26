@@ -308,66 +308,125 @@ export function SalesNotification() {
           : "-translate-x-full opacity-0 pointer-events-none"
       )}
     >
-      <div
-        className={cn(
-          // Card com borda rosa a esquerda
-          "relative flex items-center gap-3 rounded-xl bg-white p-4",
-          "border-l-4 border-pink-500",
-          // Sombra sutil
-          "shadow-lg shadow-black/10",
-          // Responsividade
-          "w-[340px] sm:w-[380px]"
-        )}
-      >
-        {/* Botao de fechar (X) */}
-        <button
-          onClick={handleDismiss}
+      {current.slug ? (
+        <Link
+          href={`/products/${current.slug}`}
           className={cn(
-            "absolute top-2 right-2 p-1 rounded-full",
-            "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
-            "transition-colors cursor-pointer"
+            "relative flex items-center gap-3 rounded-xl bg-white p-4",
+            "border-l-4 border-pink-500",
+            "shadow-lg shadow-black/10",
+            "w-[340px] sm:w-[380px]",
+            "hover:bg-gray-50 transition-colors cursor-pointer"
           )}
-          aria-label="Fechar notificacao"
         >
-          <X size={14} />
-        </button>
+          {/* Botao de fechar (X) */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDismiss(); }}
+            className={cn(
+              "absolute top-2 right-2 p-1 rounded-full",
+              "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+              "transition-colors cursor-pointer z-10"
+            )}
+            aria-label="Fechar notificacao"
+          >
+            <X size={14} />
+          </button>
 
-        {/* Thumbnail do produto ou icone generico */}
-        <div className="flex-shrink-0">
-          {current.image ? (
-            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-              <Image
-                src={current.image}
-                alt={current.product}
-                fill
-                sizes="48px"
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div className="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center">
-              <ShoppingBag size={20} className="text-pink-500" />
-            </div>
+          {/* Thumbnail do produto ou icone generico */}
+          <div className="flex-shrink-0">
+            {current.image ? (
+              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                <Image
+                  src={current.image}
+                  alt={current.product}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center">
+                <ShoppingBag size={20} className="text-pink-500" />
+              </div>
+            )}
+          </div>
+
+          {/* Conteudo da notificacao */}
+          <div className="flex-1 min-w-0 pr-4">
+            <p className="text-sm text-gray-800 leading-snug">
+              <span className="font-bold text-gray-900">{current.firstName}</span>{" "}
+              de{" "}
+              <span className="font-semibold text-gray-700">{current.city}</span>{" "}
+              comprou
+            </p>
+            <p className="text-sm font-semibold text-pink-600 truncate mt-0.5">
+              {current.product}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              ha {current.minutesAgo} min atras
+            </p>
+          </div>
+        </Link>
+      ) : (
+        <div
+          className={cn(
+            "relative flex items-center gap-3 rounded-xl bg-white p-4",
+            "border-l-4 border-pink-500",
+            "shadow-lg shadow-black/10",
+            "w-[340px] sm:w-[380px]"
           )}
-        </div>
+        >
+          {/* Botao de fechar (X) */}
+          <button
+            onClick={handleDismiss}
+            className={cn(
+              "absolute top-2 right-2 p-1 rounded-full",
+              "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+              "transition-colors cursor-pointer"
+            )}
+            aria-label="Fechar notificacao"
+          >
+            <X size={14} />
+          </button>
 
-        {/* Conteudo da notificacao */}
-        <div className="flex-1 min-w-0 pr-4">
-          <p className="text-sm text-gray-800 leading-snug">
-            <span className="font-bold text-gray-900">{current.firstName}</span>{" "}
-            de{" "}
-            <span className="font-semibold text-gray-700">{current.city}</span>{" "}
-            comprou
-          </p>
-          <p className="text-sm font-semibold text-pink-600 truncate mt-0.5">
-            {current.product}
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            ha {current.minutesAgo} min atras
-          </p>
+          {/* Thumbnail do produto ou icone generico */}
+          <div className="flex-shrink-0">
+            {current.image ? (
+              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                <Image
+                  src={current.image}
+                  alt={current.product}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center">
+                <ShoppingBag size={20} className="text-pink-500" />
+              </div>
+            )}
+          </div>
+
+          {/* Conteudo da notificacao */}
+          <div className="flex-1 min-w-0 pr-4">
+            <p className="text-sm text-gray-800 leading-snug">
+              <span className="font-bold text-gray-900">{current.firstName}</span>{" "}
+              de{" "}
+              <span className="font-semibold text-gray-700">{current.city}</span>{" "}
+              comprou
+            </p>
+            <p className="text-sm font-semibold text-pink-600 truncate mt-0.5">
+              {current.product}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              ha {current.minutesAgo} min atras
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
