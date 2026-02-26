@@ -22,6 +22,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Produtos" },
   { href: "/products?sort=sales", label: "Mais Vendidos" },
+  { href: "/blog", label: "Blog" },
 ];
 
 interface HeaderProps {

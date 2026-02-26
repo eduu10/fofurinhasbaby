@@ -12,6 +12,7 @@ const categoryLinks = [
   { href: "/products", label: "Todos os Produtos" },
   { href: "/products?sort=sales", label: "Mais Vendidos" },
   { href: "/products?sort=newest", label: "Novidades" },
+  { href: "/blog", label: "Blog para Mamaes" },
   { href: "/cart", label: "Carrinho" },
 ];
 

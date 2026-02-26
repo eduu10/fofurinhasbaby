@@ -22,6 +22,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.2",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/nodemailer": "^7.0.11",
     "@vercel/blob": "^2.3.0",
     "ae_sdk": "^0.6.0",

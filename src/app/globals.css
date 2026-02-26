@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --color-primary: #ec4899;
@@ -6,11 +7,11 @@
   --color-primary-light: #f9a8d4;
   --color-secondary: #fce7f3;
   --color-accent: #f59e0b;
-  --color-baby-pink: #FF9EB5;
-  --color-baby-blue: #89CFF0;
+  --color-baby-pink: #D9567A;
+  --color-baby-blue: #3B8FC2;
   --color-baby-yellow: #FFF5BA;
   --color-accent-yellow: #FFD700;
-  --color-accent-orange: #FF9F43;
+  --color-accent-orange: #D47A1A;
   --color-soft-purple: #E0BBE4;
   --font-sans: var(--font-nunito);
   --font-display: var(--font-fredoka);
@@ -35,14 +36,14 @@ h1, h2, h3, h4, h5, h6 {
   background: #FDFBF7;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FF9EB5, #89CFF0);
+  background: linear-gradient(180deg, #D9567A, #3B8FC2);
   border-radius: 4px;
 }
 
 /* === Gradient Utilities === */
 
 .text-gradient-pink {
-  background: linear-gradient(135deg, #FF9EB5, #FF9F43);
+  background: linear-gradient(135deg, #D9567A, #D47A1A);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -53,7 +54,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-gradient-pastel-hero {
-  background: linear-gradient(to bottom, rgba(137, 207, 240, 0.1), transparent);
+  background: linear-gradient(to bottom, rgba(59, 143, 194, 0.08), transparent);
 }
 
 .bg-gradient-button {
@@ -64,11 +65,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-gradient-offer {
-  background: linear-gradient(to right, #FF9F43, #f43f5e);
+  background: linear-gradient(to right, #D47A1A, #f43f5e);
 }
 
 .bg-gradient-buy {
-  background: linear-gradient(to bottom, #FFD700, #FF9F43);
+  background: linear-gradient(to bottom, #FFD700, #D47A1A);
 }
 .bg-gradient-buy:hover {
   filter: brightness(1.05);
@@ -77,15 +78,15 @@ h1, h2, h3, h4, h5, h6 {
 /* === Shadow Utilities === */
 
 .shadow-pink-glow {
-  box-shadow: 0 4px 14px -3px rgba(255, 158, 181, 0.35);
+  box-shadow: 0 4px 14px -3px rgba(217, 86, 122, 0.35);
 }
 
 .shadow-pastel {
-  box-shadow: 0 4px 20px -4px rgba(137, 207, 240, 0.25), 0 2px 8px -2px rgba(255, 158, 181, 0.2);
+  box-shadow: 0 4px 20px -4px rgba(59, 143, 194, 0.25), 0 2px 8px -2px rgba(217, 86, 122, 0.2);
 }
 
 .shadow-orange {
-  box-shadow: 0 6px 20px -4px rgba(255, 159, 67, 0.3);
+  box-shadow: 0 6px 20px -4px rgba(212, 122, 26, 0.3);
 }
 
 /* === Decorative Elements === */
