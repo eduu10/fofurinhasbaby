@@ -11,6 +11,7 @@ import { RecentlyViewed } from "@/components/home/recently-viewed";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { FlashSaleBanner } from "@/components/home/flash-sale-banner";
 import { WhatsAppButton } from "@/components/home/whatsapp-button";
+import { BlogPreview } from "@/components/home/blog-preview";
 import {
   ShieldCheck,
   Heart,
@@ -285,6 +286,9 @@ export default async function HomePage() {
 
       {/* Testimonials */}
       <TestimonialsSection />
+
+      {/* Blog Preview */}
+      <BlogPreview />
 
       {/* Newsletter */}
       <section className="bg-baby-pink/10 py-16 relative overflow-hidden">

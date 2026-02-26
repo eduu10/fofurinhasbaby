@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { ProductCard, type ProductCardData } from "@/components/product/product-card";
-import { ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface ProductGalleryProps {
   keywords: string[];
   title?: string;
+  subtitle?: string;
 }
 
 export function ProductGallery({
   keywords,
-  title = "Produtos Recomendados",
+  title = "Ofertas Imperdiveis",
+  subtitle = "Aproveite!",
 }: ProductGalleryProps) {
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,6 @@ export function ProductGallery({
         const res = await fetch(`/api/products?limit=8&sort=sales`);
         if (!res.ok) throw new Error("Failed");
         const json = await res.json();
-        // API returns { success, data: { products, pagination } }
         const productList = json?.data?.products || json?.products || [];
         const mapped: ProductCardData[] = productList
           .slice(0, 4)
@@ -53,7 +53,7 @@ export function ProductGallery({
               minQuantity: p.minQuantity || 1,
               maxQuantity: p.maxQuantity || 99,
               salesCount: p.salesCount || 0,
-              freeShipping: true,
+              freeShipping: Number(p.price) >= 99,
             })
           );
         setProducts(mapped);
@@ -68,86 +68,71 @@ export function ProductGallery({
 
   if (loading) {
     return (
-      <div className="my-10 bg-gradient-to-br from-pink-50/50 to-blue-50/50 rounded-3xl p-8 border border-baby-pink/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gradient-buy rounded-full flex items-center justify-center">
-            <ShoppingBag size={20} className="text-white" />
-          </div>
-          <h3 className="font-display text-xl font-bold text-gray-800">
-            {title}
-          </h3>
+      <section className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">{subtitle}</span>
+          <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
+            {title.split(" ").slice(0, -1).join(" ")}{" "}
+            <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
+              {title.split(" ").slice(-1)[0]}
+            </span>
+          </h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl h-72 animate-pulse"
-            />
+            <div key={i} className="bg-white rounded-3xl h-96 animate-pulse border-2 border-baby-blue/10" />
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="my-10 bg-gradient-to-br from-pink-50/50 to-blue-50/50 rounded-3xl p-8 border border-baby-pink/10 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Sparkles className="text-baby-pink" size={24} />
-          <h3 className="font-display text-xl font-bold text-gray-800">
-            Confira Nossa Loja
-          </h3>
-          <Sparkles className="text-baby-pink" size={24} />
+      <section className="container mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">{subtitle}</span>
+          <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
+            Confira Nossa{" "}
+            <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Loja</span>
+          </h2>
+          <p className="text-gray-600 mt-3">
+            Encontre tudo para seu bebe com frete gratis e parcelas sem juros!
+          </p>
         </div>
-        <p className="text-gray-600 mb-4">
-          Encontre tudo para seu bebe com frete gratis e parcelas sem juros!
-        </p>
-        <Link
-          href="/products"
-          className="inline-block bg-gradient-buy text-white font-display font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all"
-        >
-          Ver Todos os Produtos
-        </Link>
-      </div>
+        <div className="text-center">
+          <Link
+            href="/products"
+            className="inline-block bg-gradient-buy text-white font-display font-bold text-lg py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all"
+          >
+            Ver Todos os Produtos
+          </Link>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="my-10 bg-gradient-to-br from-pink-50/50 to-blue-50/50 rounded-3xl p-6 md:p-8 border border-baby-pink/10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-buy rounded-full flex items-center justify-center shadow-md">
-            <ShoppingBag size={20} className="text-white" />
-          </div>
-          <div>
-            <h3 className="font-display text-xl font-bold text-gray-800">
-              {title}
-            </h3>
-            <p className="text-xs text-gray-500">
-              Frete gratis + 12x sem juros
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/products"
-          className="text-sm font-bold text-baby-blue hover:underline hidden sm:block"
-        >
-          Ver todos →
-        </Link>
+    <section className="container mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">{subtitle}</span>
+        <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
+          {title.split(" ").slice(0, -1).join(" ")}{" "}
+          <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
+            {title.split(" ").slice(-1)[0]}
+          </span>
+        </h2>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
       </div>
-      <div className="mt-4 text-center sm:hidden">
-        <Link
-          href="/products"
-          className="inline-block bg-gradient-buy text-white font-display font-bold py-2.5 px-6 rounded-xl shadow-md text-sm"
-        >
-          Ver Todos os Produtos
+      <div className="text-center mt-8">
+        <Link href="/products" className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors">
+          Ver todos os produtos &rarr;
         </Link>
       </div>
-    </div>
+    </section>
   );
 }
