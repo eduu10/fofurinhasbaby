@@ -12,6 +12,8 @@ import {
 import { BlogCard } from "@/components/blog/blog-card";
 import { BlogSidebar } from "@/components/blog/blog-sidebar";
 import { ProductGallery } from "@/components/blog/product-gallery";
+import { InlineProducts } from "@/components/blog/inline-products";
+import { SidebarProducts } from "@/components/blog/sidebar-products";
 import { ShareButtons } from "@/components/blog/share-buttons";
 import { NewsletterCTA } from "@/components/blog/newsletter-cta";
 import {
@@ -233,24 +235,57 @@ export default async function ArticlePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Article Content */}
-            <article
-              className="prose prose-lg max-w-none
-                prose-headings:font-display prose-headings:text-gray-800
-                prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-baby-pink/20 prose-h2:pb-3
-                prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-8 prose-h3:mb-3 prose-h3:text-baby-pink
-                prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
-                prose-li:text-gray-700 prose-li:leading-relaxed
-                prose-ul:my-4 prose-ul:space-y-2
-                prose-ol:my-4 prose-ol:space-y-2
-                prose-strong:text-gray-800
-                prose-a:text-baby-blue prose-a:no-underline hover:prose-a:underline
-                prose-blockquote:border-baby-pink prose-blockquote:bg-pink-50/50 prose-blockquote:rounded-r-xl prose-blockquote:py-1
-              "
-              dangerouslySetInnerHTML={{ __html: article.content }}
-            />
+            {/* Article Content - First Half */}
+            {(() => {
+              // Split content at a <h2> tag roughly in the middle
+              const h2Matches = [...article.content.matchAll(/<h2[\s>]/gi)];
+              const midIndex = h2Matches.length >= 3
+                ? h2Matches[Math.floor(h2Matches.length / 2)].index!
+                : Math.floor(article.content.length / 2);
+              const firstHalf = article.content.slice(0, midIndex);
+              const secondHalf = article.content.slice(midIndex);
 
-            {/* Product Gallery */}
+              return (
+                <>
+                  <article
+                    className="prose prose-lg max-w-none
+                      prose-headings:font-display prose-headings:text-gray-800
+                      prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-baby-pink/20 prose-h2:pb-3
+                      prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-8 prose-h3:mb-3 prose-h3:text-baby-pink
+                      prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
+                      prose-li:text-gray-700 prose-li:leading-relaxed
+                      prose-ul:my-4 prose-ul:space-y-2
+                      prose-ol:my-4 prose-ol:space-y-2
+                      prose-strong:text-gray-800
+                      prose-a:text-baby-blue prose-a:no-underline hover:prose-a:underline
+                      prose-blockquote:border-baby-pink prose-blockquote:bg-pink-50/50 prose-blockquote:rounded-r-xl prose-blockquote:py-1
+                    "
+                    dangerouslySetInnerHTML={{ __html: firstHalf }}
+                  />
+
+                  {/* Inline Products - Middle of Article */}
+                  <InlineProducts title="Aproveite e Confira" skip={0} />
+
+                  <article
+                    className="prose prose-lg max-w-none
+                      prose-headings:font-display prose-headings:text-gray-800
+                      prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-baby-pink/20 prose-h2:pb-3
+                      prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-8 prose-h3:mb-3 prose-h3:text-baby-pink
+                      prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
+                      prose-li:text-gray-700 prose-li:leading-relaxed
+                      prose-ul:my-4 prose-ul:space-y-2
+                      prose-ol:my-4 prose-ol:space-y-2
+                      prose-strong:text-gray-800
+                      prose-a:text-baby-blue prose-a:no-underline hover:prose-a:underline
+                      prose-blockquote:border-baby-pink prose-blockquote:bg-pink-50/50 prose-blockquote:rounded-r-xl prose-blockquote:py-1
+                    "
+                    dangerouslySetInnerHTML={{ __html: secondHalf }}
+                  />
+                </>
+              );
+            })()}
+
+            {/* Product Gallery - End of Article */}
             <ProductGallery
               keywords={article.relatedProducts}
               title="Produtos que Voce Vai Adorar"
@@ -355,7 +390,10 @@ export default async function ArticlePage({ params }: PageProps) {
 
           {/* Sidebar */}
           <div className="w-full lg:w-80 flex-shrink-0">
-            <div className="lg:sticky lg:top-24">
+            <div className="lg:sticky lg:top-24 space-y-8">
+              {/* Sidebar Products */}
+              <SidebarProducts />
+
               <BlogSidebar currentCategory={article.category} />
             </div>
           </div>

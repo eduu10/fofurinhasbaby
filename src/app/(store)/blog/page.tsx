@@ -13,6 +13,7 @@ import type { BlogCategory } from "@/lib/blog";
 import { BlogCard } from "@/components/blog/blog-card";
 import { BlogSidebar } from "@/components/blog/blog-sidebar";
 import { ProductGallery } from "@/components/blog/product-gallery";
+import { SidebarProducts } from "@/components/blog/sidebar-products";
 import { NewsletterCTA } from "@/components/blog/newsletter-cta";
 import Link from "next/link";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
@@ -268,7 +269,8 @@ export default async function BlogPage({ searchParams }: PageProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="w-full lg:w-80 flex-shrink-0">
+          <div className="w-full lg:w-80 flex-shrink-0 space-y-8">
+            <SidebarProducts />
             <BlogSidebar currentCategory={category} currentTag={tag} />
           </div>
         </div>
