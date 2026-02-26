@@ -54,7 +54,11 @@ export default function AdminBlogPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("search", search);
-    if (filter !== "all") params.set("filter", filter);
+    if (filter === "published" || filter === "draft") {
+      params.set("status", filter);
+    } else if (filter === "static" || filter === "database") {
+      params.set("source", filter);
+    }
     params.set("page", String(page));
     params.set("limit", String(PAGE_SIZE));
 
@@ -64,8 +68,9 @@ export default function AdminBlogPage() {
       if (json.success) {
         const list = Array.isArray(json.data) ? json.data : json.data?.posts || [];
         setPosts(list);
-        setTotal(json.data?.total ?? list.length);
-        setTotalPages(json.data?.totalPages ?? Math.max(1, Math.ceil((json.data?.total ?? list.length) / PAGE_SIZE)));
+        const pag = json.data?.pagination;
+        setTotal(pag?.total ?? list.length);
+        setTotalPages(pag?.totalPages ?? Math.max(1, Math.ceil((pag?.total ?? list.length) / PAGE_SIZE)));
       }
     } finally {
       setLoading(false);

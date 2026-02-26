@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = request.nextUrl;
     const search = searchParams.get("search");
-    const status = searchParams.get("status"); // all, published, draft
+    const status = searchParams.get("status"); // published, draft
+    const source = searchParams.get("source"); // static, database
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")));
     const skip = (page - 1) * limit;
@@ -56,72 +57,79 @@ export async function GET(request: NextRequest) {
       // "all" or unset: no filter
     }
 
-    const [dbPosts, dbTotal] = await Promise.all([
-      prisma.blogPost.findMany({
-        where,
-        orderBy: { publishedAt: "desc" },
-        skip,
-        take: limit,
-      }),
-      prisma.blogPost.count({ where }),
-    ]);
+    // If filtering by source=static, skip DB entirely
+    // If filtering by source=database, skip static entirely
+    const includeDb = source !== "static";
+    const includeStatic = source !== "database" && status !== "draft";
 
-    // Map DB posts with source marker
-    const dbPostsMapped = dbPosts.map((post) => ({
-      ...post,
-      source: "database" as const,
-    }));
+    let dbPostsMapped: Array<Record<string, unknown>> = [];
+    let dbTotal = 0;
 
-    // Map static articles with source marker
-    let filteredStatic = allArticles.map((article) => ({
-      id: `static-${article.id}`,
-      title: article.title,
-      slug: article.slug,
-      excerpt: article.excerpt,
-      content: article.content,
-      category: article.category,
-      tags: article.tags,
-      coverImage: article.coverImage,
-      author: article.author,
-      readTime: article.readTime,
-      metaTitle: article.metaTitle,
-      metaDescription: article.metaDescription,
-      relatedProducts: article.relatedProducts,
-      isPublished: true,
-      publishedAt: new Date(article.publishedAt),
-      createdAt: new Date(article.publishedAt),
-      updatedAt: new Date(article.publishedAt),
-      source: "static" as const,
-    }));
-
-    // Apply search filter to static articles
-    if (search) {
-      const q = search.toLowerCase();
-      filteredStatic = filteredStatic.filter(
-        (a) =>
-          a.title.toLowerCase().includes(q) ||
-          a.excerpt.toLowerCase().includes(q) ||
-          a.author.toLowerCase().includes(q) ||
-          a.category.toLowerCase().includes(q)
-      );
+    if (includeDb) {
+      const [dbPosts, count] = await Promise.all([
+        prisma.blogPost.findMany({
+          where,
+          orderBy: { publishedAt: "desc" },
+          skip: 0,
+          take: 1000,
+        }),
+        prisma.blogPost.count({ where }),
+      ]);
+      dbTotal = count;
+      dbPostsMapped = dbPosts.map((post) => ({
+        ...post,
+        source: "database" as const,
+      }));
     }
 
-    // Apply status filter to static articles (all static are published)
-    if (status === "draft") {
-      filteredStatic = [];
+    let filteredStatic: Array<Record<string, unknown>> = [];
+
+    if (includeStatic) {
+      filteredStatic = allArticles.map((article) => ({
+        id: `static-${article.id}`,
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        category: article.category,
+        tags: article.tags,
+        coverImage: article.coverImage,
+        author: article.author,
+        readTime: article.readTime,
+        metaTitle: article.metaTitle,
+        metaDescription: article.metaDescription,
+        relatedProducts: article.relatedProducts,
+        isPublished: true,
+        publishedAt: new Date(article.publishedAt),
+        createdAt: new Date(article.publishedAt),
+        updatedAt: new Date(article.publishedAt),
+        source: "static" as const,
+      }));
+
+      // Apply search filter to static articles
+      if (search) {
+        const q = search.toLowerCase();
+        filteredStatic = filteredStatic.filter(
+          (a) =>
+            String(a.title).toLowerCase().includes(q) ||
+            String(a.excerpt).toLowerCase().includes(q) ||
+            String(a.author).toLowerCase().includes(q) ||
+            String(a.category).toLowerCase().includes(q)
+        );
+      }
     }
 
     // Merge and sort by publishedAt desc
-    const merged = [...dbPostsMapped, ...filteredStatic].sort(
+    const allPosts = [...dbPostsMapped, ...filteredStatic].sort(
       (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        new Date(b.publishedAt as string).getTime() - new Date(a.publishedAt as string).getTime()
     );
 
-    // Total for pagination is DB total + filtered static count
-    const total = dbTotal + filteredStatic.length;
+    // Total and paginate
+    const total = allPosts.length;
+    const paginated = allPosts.slice(skip, skip + limit);
 
     return successResponse({
-      posts: merged,
+      posts: paginated,
       pagination: {
         page,
         limit,
