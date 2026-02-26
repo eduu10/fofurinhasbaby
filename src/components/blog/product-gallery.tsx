@@ -22,8 +22,10 @@ export function ProductGallery({
       try {
         const res = await fetch(`/api/products?limit=8&sort=sales`);
         if (!res.ok) throw new Error("Failed");
-        const data = await res.json();
-        const mapped: ProductCardData[] = (data.products || [])
+        const json = await res.json();
+        // API returns { success, data: { products, pagination } }
+        const productList = json?.data?.products || json?.products || [];
+        const mapped: ProductCardData[] = productList
           .slice(0, 4)
           .map(
             (p: {

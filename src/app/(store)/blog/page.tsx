@@ -12,6 +12,7 @@ import {
 import type { BlogCategory } from "@/lib/blog";
 import { BlogCard } from "@/components/blog/blog-card";
 import { BlogSidebar } from "@/components/blog/blog-sidebar";
+import { ProductGallery } from "@/components/blog/product-gallery";
 import { NewsletterCTA } from "@/components/blog/newsletter-cta";
 import Link from "next/link";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
@@ -200,6 +201,14 @@ export default async function BlogPage({ searchParams }: PageProps) {
                   Ver todos os artigos
                 </Link>
               </div>
+            )}
+
+            {/* Product Gallery */}
+            {currentPage === 1 && (
+              <ProductGallery
+                keywords={["bebe", "roupa", "brinquedo"]}
+                title="Aproveite Nossas Ofertas"
+              />
             )}
 
             {/* Pagination */}
