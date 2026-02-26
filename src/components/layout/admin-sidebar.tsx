@@ -20,9 +20,21 @@ import {
   Globe,
   Import,
   FileText,
+  Search,
+  Activity,
+  BarChart3,
+  Truck,
+  CreditCard,
 } from "lucide-react";
 
-const sidebarLinks = [
+interface SidebarLink {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  section?: string;
+}
+
+const sidebarLinks: SidebarLink[] = [
   {
     href: "/admin",
     label: "Dashboard",
@@ -63,10 +75,59 @@ const sidebarLinks = [
     label: "Financeiro",
     icon: DollarSign,
   },
+  // --- Dropshipping Hub ---
+  {
+    href: "/admin/dropship",
+    label: "Dropship Hub",
+    icon: Truck,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/search",
+    label: "Pesquisar Fornec.",
+    icon: Search,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/products",
+    label: "Produtos Drop",
+    icon: Package,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/orders",
+    label: "Fulfillment",
+    icon: ShoppingBag,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/monitor",
+    label: "Monitor Preços",
+    icon: Activity,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/analytics",
+    label: "Analytics Drop",
+    icon: BarChart3,
+    section: "dropship",
+  },
+  {
+    href: "/admin/dropship/settings",
+    label: "Config. Drop",
+    icon: Settings,
+    section: "dropship",
+  },
+  // --- General Settings ---
   {
     href: "/admin/settings",
     label: "Configuracoes",
     icon: Settings,
+  },
+  {
+    href: "/admin/settings/asaas",
+    label: "Pagamentos",
+    icon: CreditCard,
   },
   {
     href: "/admin/settings/aliexpress",
@@ -109,32 +170,56 @@ export function AdminSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {sidebarLinks.map((link) => {
+        {sidebarLinks.map((link, idx) => {
           const Icon = link.icon;
           const active = isActive(link.href);
+          const prevLink = sidebarLinks[idx - 1];
+          const showDropshipDivider =
+            link.section === "dropship" &&
+            (!prevLink || prevLink.section !== "dropship");
+          const showSettingsDivider =
+            !link.section &&
+            prevLink?.section === "dropship";
 
           return (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-pink-50 text-pink-700"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                collapsed && "justify-center px-2"
+            <div key={link.href}>
+              {showDropshipDivider && !collapsed && (
+                <div className="mb-1 mt-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  Dropshipping
+                </div>
               )}
-              title={collapsed ? link.label : undefined}
-            >
-              <Icon
+              {showDropshipDivider && collapsed && (
+                <div className="mx-auto my-2 h-px w-6 bg-gray-200" />
+              )}
+              {showSettingsDivider && !collapsed && (
+                <div className="mb-1 mt-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  Sistema
+                </div>
+              )}
+              {showSettingsDivider && collapsed && (
+                <div className="mx-auto my-2 h-px w-6 bg-gray-200" />
+              )}
+              <Link
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "h-5 w-5 flex-shrink-0",
-                  active ? "text-pink-600" : "text-gray-400"
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  active
+                    ? "bg-pink-50 text-pink-700"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                  collapsed && "justify-center px-2"
                 )}
-              />
-              {!collapsed && <span>{link.label}</span>}
-            </Link>
+                title={collapsed ? link.label : undefined}
+              >
+                <Icon
+                  className={cn(
+                    "h-5 w-5 flex-shrink-0",
+                    active ? "text-pink-600" : "text-gray-400"
+                  )}
+                />
+                {!collapsed && <span>{link.label}</span>}
+              </Link>
+            </div>
           );
         })}
       </nav>
