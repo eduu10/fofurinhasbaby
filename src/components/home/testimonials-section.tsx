@@ -176,18 +176,22 @@ export function TestimonialsSection() {
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {Array.from({ length: maxPage + 1 }).map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
-                  i === current
-                    ? "bg-baby-pink w-6"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
+                className="relative w-10 h-10 flex items-center justify-center cursor-pointer"
                 aria-label={`Pagina ${i + 1}`}
-              />
+              >
+                <span
+                  className={`block h-2.5 rounded-full transition-colors duration-300 ${
+                    i === current
+                      ? "bg-baby-pink w-6"
+                      : "bg-gray-300 hover:bg-gray-400 w-2.5"
+                  }`}
+                />
+              </button>
             ))}
           </div>
 

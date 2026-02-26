@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,12 +15,21 @@ interface SaleNotification {
   city: string;
   product: string;
   image: string | null;
+  slug: string | null;
   minutesAgo: number;
 }
 
 /** Resposta esperada da API /api/orders/recent */
 interface RecentOrdersResponse {
-  orders: SaleNotification[];
+  success: boolean;
+  data: Array<{
+    name: string;
+    city: string;
+    product: string;
+    image: string | null;
+    slug: string | null;
+    minutesAgo: number;
+  }>;
 }
 
 // ─── Dados mock (fallback quando a API falha) ────────────────────────────────
@@ -32,6 +42,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Sao Paulo",
     product: "Kit Body Bebe Algodao 3 pecas",
     image: null,
+    slug: null,
     minutesAgo: 3,
   },
   {
@@ -40,6 +51,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Rio de Janeiro",
     product: "Manta Soft Recen-Nascido",
     image: null,
+    slug: null,
     minutesAgo: 7,
   },
   {
@@ -48,6 +60,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Belo Horizonte",
     product: "Sapatinho de Trico Bebe",
     image: null,
+    slug: null,
     minutesAgo: 12,
   },
   {
@@ -56,6 +69,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Curitiba",
     product: "Conjunto Moletom Infantil Urso",
     image: null,
+    slug: null,
     minutesAgo: 15,
   },
   {
@@ -64,6 +78,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Salvador",
     product: "Fralda de Pano Bordada 5 unid",
     image: null,
+    slug: null,
     minutesAgo: 18,
   },
   {
@@ -72,6 +87,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Brasilia",
     product: "Babador Silicone com Bolso",
     image: null,
+    slug: null,
     minutesAgo: 22,
   },
   {
@@ -80,6 +96,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Fortaleza",
     product: "Toalha de Banho com Capuz",
     image: null,
+    slug: null,
     minutesAgo: 25,
   },
   {
@@ -88,6 +105,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Recife",
     product: "Mamadeira Anticolica 260ml",
     image: null,
+    slug: null,
     minutesAgo: 30,
   },
   {
@@ -96,6 +114,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Porto Alegre",
     product: "Chupeta Ortodontica 0-6m",
     image: null,
+    slug: null,
     minutesAgo: 35,
   },
   {
@@ -104,6 +123,7 @@ const MOCK_NOTIFICATIONS: SaleNotification[] = [
     city: "Manaus",
     product: "Kit Higiene Bebe 5 pecas",
     image: null,
+    slug: null,
     minutesAgo: 42,
   },
 ];
@@ -156,8 +176,16 @@ export function SalesNotification() {
 
       const data: RecentOrdersResponse = await response.json();
 
-      if (data.orders && data.orders.length > 0) {
-        return data.orders;
+      if (data.success && data.data && data.data.length > 0) {
+        return data.data.map((item, i) => ({
+          id: `api-${i}`,
+          firstName: item.name,
+          city: item.city,
+          product: item.product,
+          image: item.image,
+          slug: item.slug,
+          minutesAgo: item.minutesAgo,
+        }));
       }
 
       // Se a API retornar vazio, usa mock

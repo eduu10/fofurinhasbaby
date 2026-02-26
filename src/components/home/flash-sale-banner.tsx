@@ -24,6 +24,7 @@ interface FlashSaleBannerProps {
 }
 
 function FlashCountdown() {
+  const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
     minutes: 0,
@@ -42,12 +43,30 @@ function FlashCountdown() {
         seconds: Math.floor((diff % (1000 * 60)) / 1000),
       };
     }
+    setMounted(true);
     setTimeLeft(getTimeLeft());
     const interval = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   const pad = (n: number) => String(n).padStart(2, "0");
+
+  if (!mounted) {
+    return (
+      <div className="flex gap-2 justify-center">
+        {["Horas", "Min", "Seg"].map((label) => (
+          <div key={label} className="text-center">
+            <div className="bg-white text-gray-800 font-mono font-bold text-2xl sm:text-3xl w-14 sm:w-16 h-14 sm:h-16 rounded-xl flex items-center justify-center shadow-lg">
+              --
+            </div>
+            <span className="text-white/80 text-[10px] font-bold uppercase mt-1 block">
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-2 justify-center">
@@ -139,7 +158,7 @@ export function FlashSaleBanner({ products }: FlashSaleBannerProps) {
                   </Link>
 
                   <div className="mt-2">
-                    <span className="text-gray-400 text-xs line-through block">
+                    <span className="text-gray-500 text-xs line-through block">
                       {formatCurrency(product.compareAtPrice)}
                     </span>
                     <span className="text-lg font-display font-bold text-accent-orange">

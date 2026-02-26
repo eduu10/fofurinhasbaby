@@ -7,8 +7,11 @@ import { cn } from "@/lib/utils";
 /** Codigo do cupom exibido apos o cadastro */
 const COUPON_CODE = "FOFURA10";
 
-/** Chave usada no sessionStorage para evitar exibicao repetida */
-const SESSION_KEY = "exitIntentShown";
+/** Chave usada no localStorage para evitar exibicao repetida (com cooldown) */
+const SHOWN_KEY = "exitIntentShownAt";
+
+/** Cooldown em milissegundos antes de exibir novamente (3 dias) */
+const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
 
 /** Chave usada no localStorage para persistir o email capturado */
 const EMAIL_STORAGE_KEY = "exitIntentEmail";
@@ -38,8 +41,8 @@ export function ExitIntentPopup() {
    */
   const showPopup = useCallback(() => {
     setIsVisible(true);
-    // Marca a flag no sessionStorage imediatamente
-    sessionStorage.setItem(SESSION_KEY, "true");
+    // Marca o timestamp no localStorage para cooldown
+    localStorage.setItem(SHOWN_KEY, Date.now().toString());
     // Pequeno atraso para disparar a animacao CSS (fade in + scale)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -65,9 +68,12 @@ export function ExitIntentPopup() {
    * Dispara o popup quando o cursor sai pelo topo (clientY < 10).
    */
   useEffect(() => {
-    // Nao registra se ja foi exibido nesta sessao
-    const alreadyShown = sessionStorage.getItem(SESSION_KEY);
-    if (alreadyShown) return;
+    // Nao exibe se ja foi cadastrado email
+    if (localStorage.getItem(EMAIL_STORAGE_KEY)) return;
+
+    // Nao exibe se ainda esta dentro do cooldown de 3 dias
+    const lastShown = localStorage.getItem(SHOWN_KEY);
+    if (lastShown && Date.now() - Number(lastShown) < COOLDOWN_MS) return;
 
     const handleMouseLeave = (e: MouseEvent) => {
       // Detecta saida pelo topo da janela

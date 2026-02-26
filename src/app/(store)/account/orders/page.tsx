@@ -5,15 +5,21 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, ChevronRight } from "lucide-react";
 
+interface OrderItem {
+  title: string;
+  quantity: number;
+  product?: { title: string } | null;
+}
+
 interface Order {
   id: string;
   orderNumber: string;
   status: string;
-  total: string;
+  total: string | number;
   createdAt: string;
   trackingCode?: string | null;
   aliexpressOrderId?: string | null;
-  items: { title: string; quantity: number }[];
+  items: OrderItem[];
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Package; step: number }> = {
@@ -82,8 +88,14 @@ export default function OrdersPage() {
     fetch("/api/orders")
       .then((r) => r.json())
       .then((json) => {
-        if (json.success) setOrders(json.data);
+        if (json.success) {
+          // API returns { orders, pagination } inside data
+          const data = json.data;
+          const list = Array.isArray(data) ? data : data?.orders ?? [];
+          setOrders(list);
+        }
       })
+      .catch(() => { /* ignore */ })
       .finally(() => setLoading(false));
   }, []);
 
@@ -158,7 +170,7 @@ export default function OrdersPage() {
                           {config.label}
                         </span>
                         <p className="mt-1 font-display font-bold text-gray-800">
-                          {formatCurrency(order.total)}
+                          {formatCurrency(Number(order.total))}
                         </p>
                       </div>
                     </div>

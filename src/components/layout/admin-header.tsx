@@ -18,10 +18,10 @@ export function AdminHeader() {
   const logout = useAuthStore((state) => state.logout);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 pl-14 sm:px-6 lg:px-8">
       {/* Left: Store name */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold text-gray-800">
+      <div className="flex items-center gap-3 min-w-0">
+        <h1 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
           Painel Administrativo
         </h1>
       </div>

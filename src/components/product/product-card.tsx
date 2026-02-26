@@ -190,9 +190,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
         )}
 
         <div className="mt-auto pt-4 border-t border-gray-100">
-          <div className="flex items-end gap-2 mb-1">
+          <div className="flex flex-wrap items-end gap-x-2 mb-1">
             {hasDiscount && (
-              <span className="text-gray-400 text-sm line-through font-bold">
+              <span className="text-gray-500 text-sm line-through font-bold">
                 {formatCurrency(product.compareAtPrice!)}
               </span>
             )}
@@ -200,7 +200,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
               {formatCurrency(product.price)}
             </span>
           </div>
-          <p className="text-[10px] text-gray-400 font-medium mb-3">
+          <p className="text-[10px] text-gray-500 font-medium mb-3">
             ou 12x de {formatCurrency(product.price / 12)}
           </p>
 

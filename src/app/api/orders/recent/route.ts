@@ -25,6 +25,9 @@ export async function GET() {
           select: {
             title: true,
             image: true,
+            product: {
+              select: { slug: true },
+            },
           },
           take: 1,
         },
@@ -46,6 +49,7 @@ export async function GET() {
         city,
         product: product?.title ?? "Produto Fofurinhas",
         image: product?.image ?? null,
+        slug: product?.product?.slug ?? null,
         minutesAgo: Math.min(minutesAgo, 180), // Máximo 3h
       };
     });

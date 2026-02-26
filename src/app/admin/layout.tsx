@@ -34,7 +34,7 @@ export default function AdminLayout({
 
       <div className="flex flex-1 flex-col lg:ml-64">
         <AdminHeader />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-3 sm:p-6">{children}</main>
       </div>
     </div>
   );

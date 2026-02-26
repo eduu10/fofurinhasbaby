@@ -91,7 +91,7 @@ export function BestsellerCarousel({ products }: BestsellerCarouselProps) {
             return (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-[260px] snap-start bg-white rounded-2xl overflow-hidden shadow-lg border-2 border-transparent hover:border-accent-orange/30 transition-all group"
+                className="flex-shrink-0 w-[75vw] sm:w-[260px] snap-start bg-white rounded-2xl overflow-hidden shadow-lg border-2 border-transparent hover:border-accent-orange/30 transition-all group"
               >
                 {/* TOP VENDA badge */}
                 <div className="relative">
@@ -135,14 +135,14 @@ export function BestsellerCarousel({ products }: BestsellerCarouselProps) {
                         />
                       ))}
                     </div>
-                    <span className="text-[10px] text-gray-400 font-bold">
+                    <span className="text-[10px] text-gray-500 font-bold">
                       {product.salesCount}+ vendas
                     </span>
                   </div>
 
-                  <div className="flex items-end gap-2 mb-3">
+                  <div className="flex flex-wrap items-end gap-x-2 mb-3">
                     {hasDiscount && (
-                      <span className="text-gray-400 text-xs line-through">
+                      <span className="text-gray-500 text-xs line-through">
                         {formatCurrency(product.compareAtPrice!)}
                       </span>
                     )}
