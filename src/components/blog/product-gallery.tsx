@@ -1,90 +1,44 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { prisma } from "@/lib/prisma";
 import { ProductCard, type ProductCardData } from "@/components/product/product-card";
 import Link from "next/link";
 
 interface ProductGalleryProps {
-  keywords: string[];
+  keywords?: string[];
   title?: string;
   subtitle?: string;
 }
 
-export function ProductGallery({
-  keywords,
+export async function ProductGallery({
   title = "Ofertas Imperdiveis",
   subtitle = "Aproveite!",
 }: ProductGalleryProps) {
-  const [products, setProducts] = useState<ProductCardData[]>([]);
-  const [loading, setLoading] = useState(true);
+  let products: ProductCardData[] = [];
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await fetch(`/api/products?limit=8&sort=sales`);
-        if (!res.ok) throw new Error("Failed");
-        const json = await res.json();
-        const productList = json?.data?.products || json?.products || [];
-        const mapped: ProductCardData[] = productList
-          .slice(0, 4)
-          .map(
-            (p: {
-              id: string;
-              title: string;
-              slug: string;
-              price: number;
-              compareAtPrice?: number | null;
-              images?: { url: string }[];
-              category?: { name: string } | null;
-              stock: number;
-              minQuantity: number;
-              maxQuantity: number;
-              salesCount?: number;
-            }) => ({
-              id: p.id,
-              title: p.title,
-              slug: p.slug,
-              price: Number(p.price),
-              compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
-              image: p.images?.[0]?.url || "/placeholder.jpg",
-              secondImage: p.images?.[1]?.url || null,
-              category: p.category?.name || null,
-              stock: p.stock,
-              minQuantity: p.minQuantity || 1,
-              maxQuantity: p.maxQuantity || 99,
-              salesCount: p.salesCount || 0,
-              freeShipping: Number(p.price) >= 99,
-            })
-          );
-        setProducts(mapped);
-      } catch {
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, [keywords]);
+  try {
+    const raw = await prisma.product.findMany({
+      where: { isActive: true, isDraft: false },
+      include: { images: { orderBy: { sortOrder: "asc" } }, category: true },
+      orderBy: { salesCount: "desc" },
+      take: 4,
+    });
 
-  if (loading) {
-    return (
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">{subtitle}</span>
-          <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-            {title.split(" ").slice(0, -1).join(" ")}{" "}
-            <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
-              {title.split(" ").slice(-1)[0]}
-            </span>
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-3xl h-96 animate-pulse border-2 border-baby-blue/10" />
-          ))}
-        </div>
-      </section>
-    );
+    products = raw.map((p) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      price: Number(p.price),
+      compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+      image: p.images?.[0]?.url || "/placeholder.jpg",
+      secondImage: p.images?.[1]?.url || null,
+      category: p.category?.name || null,
+      stock: p.stock,
+      minQuantity: p.minQuantity || 1,
+      maxQuantity: p.maxQuantity || 99,
+      salesCount: p.salesCount || 0,
+      freeShipping: Number(p.price) >= 99,
+    }));
+  } catch {
+    products = [];
   }
 
   if (products.length === 0) {
@@ -112,14 +66,18 @@ export function ProductGallery({
     );
   }
 
+  const titleWords = title.split(" ");
+  const lastWord = titleWords.pop();
+  const firstWords = titleWords.join(" ");
+
   return (
     <section className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
         <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">{subtitle}</span>
         <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-          {title.split(" ").slice(0, -1).join(" ")}{" "}
+          {firstWords}{" "}
           <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
-            {title.split(" ").slice(-1)[0]}
+            {lastWord}
           </span>
         </h2>
       </div>

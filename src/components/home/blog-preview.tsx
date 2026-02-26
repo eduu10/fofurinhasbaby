@@ -1,22 +1,11 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BookOpen, Calendar, Clock, ArrowRight } from "lucide-react";
 import { allArticles, categoryLabels, categoryColors, categoryEmojis } from "@/lib/blog";
-import type { BlogArticle } from "@/lib/blog";
-
-function getRandomArticles(count: number): BlogArticle[] {
-  const shuffled = [...allArticles].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
 
 export function BlogPreview() {
-  const [articles, setArticles] = useState<BlogArticle[]>([]);
-
-  useEffect(() => {
-    setArticles(getRandomArticles(4));
-  }, []);
+  // Randomize on server — works because home page has force-dynamic
+  const shuffled = [...allArticles].sort(() => Math.random() - 0.5);
+  const articles = shuffled.slice(0, 4);
 
   if (articles.length === 0) return null;
 
