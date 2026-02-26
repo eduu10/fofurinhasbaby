@@ -67,8 +67,8 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
 
       {/* Main Header */}
       <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md shadow-sm border-b border-baby-pink/20">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-1.5 sm:gap-4">
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -79,10 +79,10 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2 min-w-0 flex-shrink">
               {storeLogo ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={storeLogo} alt={storeName || "Fofurinhas Baby"} className="h-10 sm:h-12 w-auto object-contain flex-shrink-0" />
+                <img src={storeLogo} alt={storeName || "Fofurinhas Baby"} className="h-8 sm:h-12 max-w-[120px] sm:max-w-[200px] w-auto object-contain" />
               ) : (
                 <>
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
@@ -129,14 +129,14 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
             </form>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-2 sm:gap-4 text-gray-600 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-4 text-gray-600 flex-shrink-0">
               {/* Mobile search toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="lg:hidden"
                 aria-label="Buscar"
               >
-                <Search size={24} />
+                <Search size={20} className="sm:w-6 sm:h-6" />
               </button>
 
               {/* Favorites */}
@@ -155,7 +155,7 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
                 aria-label="Carrinho"
               >
                 <div className="relative">
-                  <ShoppingCart size={24} />
+                  <ShoppingCart size={20} className="sm:w-6 sm:h-6" />
                   {mounted && itemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-accent-orange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                       {itemCount > 99 ? "99+" : itemCount}
@@ -170,9 +170,9 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100"
+                    className="flex items-center gap-1 sm:gap-1.5 rounded-md px-1 sm:px-2 py-1 sm:py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100"
                   >
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-baby-pink to-accent-orange text-xs font-semibold text-white">
+                    <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-gradient-to-br from-baby-pink to-accent-orange text-[10px] sm:text-xs font-semibold text-white">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <span className="hidden max-w-[100px] truncate sm:inline">
