@@ -32,6 +32,8 @@ export default async function StoreLayout({
       <Header
         topBarText={settings.topBarText}
         searchPlaceholder={settings.searchPlaceholder}
+        storeName={settings.storeName}
+        storeLogo={settings.storeLogo}
       />
       <main className="min-h-screen">{children}</main>
       <Footer
@@ -40,6 +42,9 @@ export default async function StoreLayout({
         contactWhatsapp={settings.contactWhatsapp}
         contactWhatsappDisplay={settings.contactWhatsappDisplay}
         contactHours={settings.contactHours}
+        socialInstagram={settings.socialInstagram}
+        socialFacebook={settings.socialFacebook}
+        socialTiktok={settings.socialTiktok}
       />
       <FloatingCart />
       <SalesNotification />

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +18,19 @@ import {
   Lock,
   Package,
 } from "lucide-react";
+
+async function getStoreSettings() {
+  try {
+    const settings = await prisma.storeSetting.findMany();
+    const map: Record<string, string> = {};
+    settings.forEach((s) => {
+      map[s.key] = s.value;
+    });
+    return map;
+  } catch {
+    return {};
+  }
+}
 
 async function getFeaturedProducts() {
   try {
@@ -84,7 +98,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   decoracao: "\u2B50",
 };
 
-export default async function HomePage() {
+async function HomeContent() {
   const [featured, bestsellers, offers, categories] = await Promise.all([
     getFeaturedProducts(),
     getBestsellers(),
@@ -92,7 +106,6 @@ export default async function HomePage() {
     getCategories(),
   ]);
 
-  // Map bestsellers for the carousel component
   const bestsellerData = bestsellers.map((p) => ({
     id: p.id,
     title: p.title,
@@ -106,7 +119,6 @@ export default async function HomePage() {
     maxQuantity: p.maxQuantity ?? 99,
   }));
 
-  // Flash sale products (those with discount)
   const flashProducts = offers
     .filter((p) => p.compareAtPrice && Number(p.compareAtPrice) > Number(p.price))
     .map((p) => ({
@@ -122,49 +134,25 @@ export default async function HomePage() {
     }));
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] overflow-x-hidden">
-      {/* Hero Carousel */}
-      <HeroCarousel />
-
-      {/* Trust Badges */}
-      <section className="bg-white py-8 border-y border-gray-100">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Users,
-                title: "1.200+ Mamaes",
-                text: "Clientes satisfeitas em todo Brasil",
-              },
-              {
-                icon: Package,
-                title: "Envio Direto",
-                text: "Enviado direto para sua casa",
-              },
-              {
-                icon: Lock,
-                title: "100% Seguro",
-                text: "Pagamento com criptografia SSL",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Garantia",
-                text: "7 dias para troca ou devolucao",
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 bg-baby-blue/10 text-baby-blue rounded-full flex items-center justify-center mb-1">
-                  <item.icon size={24} strokeWidth={2.5} />
-                </div>
-                <h3 className="font-display font-bold text-gray-800">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-gray-500 font-medium">{item.text}</p>
-              </div>
-            ))}
+    <>
+      {/* Featured Products */}
+      {featured.length > 0 && (
+        <section className="container mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <span className="text-baby-pink font-bold tracking-wider uppercase text-sm">Os queridinhos das mamaes</span>
+            <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
+              Produtos em{" "}
+              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Destaque</span>
+            </h2>
           </div>
-        </div>
-      </section>
+          <ProductGrid products={featured} />
+          <div className="text-center mt-8">
+            <Link href="/products?featured=true" className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors">
+              Ver todos os produtos &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Categories */}
       {categories.length > 0 && (
@@ -176,7 +164,6 @@ export default async function HomePage() {
             {categories.map((cat) => {
               const emoji = CATEGORY_EMOJIS[cat.slug] || "\uD83E\uDDF8";
               const productCount = (cat as unknown as { _count: { products: number } })._count;
-
               return (
                 <Link
                   key={cat.id}
@@ -185,21 +172,12 @@ export default async function HomePage() {
                 >
                   <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-baby-blue/10 text-3xl transition group-hover:scale-110">
                     {cat.image ? (
-                      <Image
-                        src={cat.image}
-                        alt={cat.name}
-                        width={48}
-                        height={48}
-                        className="rounded-full object-cover"
-                        unoptimized
-                      />
+                      <Image src={cat.image} alt={cat.name} width={48} height={48} className="rounded-full object-cover" unoptimized />
                     ) : (
                       <span>{emoji}</span>
                     )}
                   </div>
-                  <span className="text-sm font-display font-bold text-gray-700 group-hover:text-baby-pink">
-                    {cat.name}
-                  </span>
+                  <span className="text-sm font-display font-bold text-gray-700 group-hover:text-baby-pink">{cat.name}</span>
                   {productCount && productCount.products > 0 && (
                     <span className="absolute top-2 right-2 bg-baby-pink/10 text-baby-pink text-[10px] font-bold px-2 py-0.5 rounded-full">
                       {productCount.products}
@@ -212,73 +190,101 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Featured Products */}
-      {featured.length > 0 && (
-        <section className="container mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <span className="text-baby-pink font-bold tracking-wider uppercase text-sm">
-              Os queridinhos das mamaes
-            </span>
-            <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
-              Produtos em{" "}
-              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
-                Destaque
-              </span>
-            </h2>
-          </div>
-          <ProductGrid products={featured} />
-          <div className="text-center mt-8">
-            <Link
-              href="/products?featured=true"
-              className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors"
-            >
-              Ver todos os produtos &rarr;
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* Flash Sale Banner */}
-      {flashProducts.length > 0 && (
-        <FlashSaleBanner products={flashProducts} />
-      )}
-
-      {/* Bestsellers Carousel (real-time) */}
-      {bestsellerData.length > 0 && (
-        <BestsellerCarousel products={bestsellerData} />
-      )}
-
-      {/* Recently Viewed (client-side) */}
-      <RecentlyViewed />
-
-      {/* Testimonials */}
-      <TestimonialsSection />
+      {flashProducts.length > 0 && <FlashSaleBanner products={flashProducts} />}
+      {bestsellerData.length > 0 && <BestsellerCarousel products={bestsellerData} />}
 
       {/* Offers */}
       {offers.length > 0 && (
         <section className="container mx-auto px-4 py-12">
           <div className="text-center mb-12">
-            <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">
-              Aproveite!
-            </span>
+            <span className="text-accent-orange font-bold tracking-wider uppercase text-sm">Aproveite!</span>
             <h2 className="font-display text-4xl font-bold text-gray-800 mt-2">
               Ofertas{" "}
-              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">
-                Imperdiveis
-              </span>
+              <span className="text-accent-orange underline decoration-wavy decoration-baby-yellow underline-offset-4">Imperdiveis</span>
             </h2>
           </div>
           <ProductGrid products={offers} />
           <div className="text-center mt-8">
-            <Link
-              href="/products?offers=true"
-              className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors"
-            >
+            <Link href="/products?offers=true" className="text-sm font-semibold text-baby-pink hover:text-pink-400 transition-colors">
               Ver todas as ofertas &rarr;
             </Link>
           </div>
         </section>
       )}
+    </>
+  );
+}
+
+export default async function HomePage() {
+  const settings = await getStoreSettings();
+
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] overflow-x-hidden">
+      {/* Preload hero LCP image */}
+      <link
+        rel="preload"
+        as="image"
+        href={settings.heroImage || "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=75&w=650&fm=webp"}
+        // @ts-expect-error fetchpriority not yet in React types
+        fetchpriority="high"
+      />
+
+      {/* Hero Carousel - renderiza imediatamente */}
+      <HeroCarousel
+        heroBadge={settings.heroBadge}
+        heroTitle1={settings.heroTitle1}
+        heroTitle2={settings.heroTitle2}
+        heroDescription={settings.heroDescription}
+        heroCta1={settings.heroCta1}
+        heroCta2={settings.heroCta2}
+        heroImage={settings.heroImage}
+        heroTestimonial={settings.heroTestimonial}
+        heroTestimonialAuthor={settings.heroTestimonialAuthor}
+      />
+
+      {/* Conteúdo dinâmico - carrega enquanto a página já está visível */}
+      <Suspense fallback={
+        <div className="container mx-auto px-4 py-12 text-center">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-100 rounded w-48 mx-auto" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-100 rounded-2xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      }>
+        <HomeContent />
+      </Suspense>
+
+      {/* Trust Badges */}
+      <section className="bg-white py-8 border-y border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: Users, title: "1.200+ Mamaes", text: "Clientes satisfeitas em todo Brasil" },
+              { icon: Package, title: "Envio Direto", text: "Enviado direto para sua casa" },
+              { icon: Lock, title: "100% Seguro", text: "Pagamento com criptografia SSL" },
+              { icon: ShieldCheck, title: "Garantia", text: "7 dias para troca ou devolucao" },
+            ].map((item, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 bg-baby-blue/10 text-baby-blue rounded-full flex items-center justify-center mb-1">
+                  <item.icon size={24} strokeWidth={2.5} />
+                </div>
+                <h3 className="font-display font-bold text-gray-800">{item.title}</h3>
+                <p className="text-xs text-gray-500 font-medium">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Newsletter */}
       <section className="bg-baby-pink/10 py-16 relative overflow-hidden">
@@ -292,8 +298,7 @@ export default async function HomePage() {
             </h2>
             <p className="text-gray-600 mb-8 max-w-lg mx-auto">
               Receba dicas exclusivas, ofertas secretas e um cupom de{" "}
-              <span className="font-bold text-accent-orange">10% OFF</span> na
-              sua primeira compra.
+              <span className="font-bold text-accent-orange">10% OFF</span> na sua primeira compra.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
@@ -305,15 +310,12 @@ export default async function HomePage() {
                 CADASTRAR
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-4">
-              Prometemos nao enviar spam. Apenas amor e ofertas!
-            </p>
+            <p className="text-xs text-gray-500 mt-4">Prometemos nao enviar spam. Apenas amor e ofertas!</p>
           </div>
         </div>
       </section>
 
-      {/* WhatsApp Floating Button */}
-      <WhatsAppButton />
+      <WhatsAppButton whatsappNumber={settings.contactWhatsapp} storeName={settings.storeName} />
     </div>
   );
 }

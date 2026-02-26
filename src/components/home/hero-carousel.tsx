@@ -4,7 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 
-const slides = [
+interface HeroCarouselProps {
+  heroBadge?: string;
+  heroTitle1?: string;
+  heroTitle2?: string;
+  heroDescription?: string;
+  heroCta1?: string;
+  heroCta2?: string;
+  heroImage?: string;
+  heroTestimonial?: string;
+  heroTestimonialAuthor?: string;
+}
+
+const defaultSlides = [
   {
     badge: "Novidade Magica",
     title1: "Sonhos Doces &",
@@ -12,20 +24,9 @@ const slides = [
     description:
       "Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.",
     image:
-      "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=75&w=650&fm=webp",
     cta: "VER OFERTAS",
     ctaLink: "/products",
-  },
-  {
-    badge: "Mais Vendidos",
-    title1: "Brincadeiras &",
-    title2: "Sorrisos Garantidos",
-    description:
-      "Brinquedos educativos e seguros que estimulam o desenvolvimento do seu pequeno. Qualidade que voce pode confiar.",
-    image:
-      "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&q=80&w=800",
-    cta: "VER BRINQUEDOS",
-    ctaLink: "/products?category=brinquedos",
   },
   {
     badge: "Cuidado Especial",
@@ -34,17 +35,17 @@ const slides = [
     description:
       "Produtos de higiene delicados e seguros para a pele sensivel do seu bebe. Do banho ate a hora de dormir.",
     image:
-      "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=75&w=650&fm=webp",
     cta: "VER HIGIENE",
     ctaLink: "/products?category=higiene",
   },
 ];
 
 function CountdownTimer() {
+  const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    // Set countdown to end of today
     function getTimeLeft() {
       const now = new Date();
       const end = new Date(now);
@@ -56,6 +57,7 @@ function CountdownTimer() {
         seconds: Math.floor((diff % (1000 * 60)) / 1000),
       };
     }
+    setMounted(true);
     setTimeLeft(getTimeLeft());
     const interval = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
     return () => clearInterval(interval);
@@ -64,33 +66,53 @@ function CountdownTimer() {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <div className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold shadow-sm border border-orange-100">
-      <span className="text-accent-orange">Oferta expira em</span>
-      <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
-        {pad(timeLeft.hours)}
-      </span>
-      <span className="text-accent-orange">:</span>
-      <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
-        {pad(timeLeft.minutes)}
-      </span>
-      <span className="text-accent-orange">:</span>
-      <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
-        {pad(timeLeft.seconds)}
-      </span>
+    <div className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold shadow-sm border border-orange-100 min-h-[34px]">
+      {mounted ? (
+        <>
+          <span className="text-accent-orange">Oferta expira em</span>
+          <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
+            {pad(timeLeft.hours)}
+          </span>
+          <span className="text-accent-orange">:</span>
+          <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
+            {pad(timeLeft.minutes)}
+          </span>
+          <span className="text-accent-orange">:</span>
+          <span className="bg-accent-orange text-white px-1.5 py-0.5 rounded text-xs font-mono">
+            {pad(timeLeft.seconds)}
+          </span>
+        </>
+      ) : (
+        <span className="text-accent-orange">Oferta expira em --:--:--</span>
+      )}
     </div>
   );
 }
 
-export function HeroCarousel() {
+export function HeroCarousel(props: HeroCarouselProps) {
+  // Build slides: first slide uses settings (if provided), second is the default secondary slide
+  const slides = [
+    {
+      badge: props.heroBadge || defaultSlides[0].badge,
+      title1: props.heroTitle1 || defaultSlides[0].title1,
+      title2: props.heroTitle2 || defaultSlides[0].title2,
+      description: props.heroDescription || defaultSlides[0].description,
+      image: props.heroImage || defaultSlides[0].image,
+      cta: props.heroCta1 || defaultSlides[0].cta,
+      ctaLink: defaultSlides[0].ctaLink,
+    },
+    defaultSlides[1],
+  ];
+
   const [current, setCurrent] = useState(0);
 
   const next = useCallback(() => {
     setCurrent((c) => (c + 1) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   const prev = useCallback(() => {
     setCurrent((c) => (c - 1 + slides.length) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   // Auto-advance every 4 seconds
   useEffect(() => {
@@ -99,6 +121,10 @@ export function HeroCarousel() {
   }, [next]);
 
   const slide = slides[current];
+
+  const cta2Text = props.heroCta2 || "MAIS VENDIDOS";
+  const testimonialText = props.heroTestimonial || "Meu bebe dormiu em 5 minutos!";
+  const testimonialAuthor = props.heroTestimonialAuthor || "Mamae Julia";
 
   return (
     <section className="relative bg-gradient-pastel-hero pt-8 pb-16 overflow-hidden">
@@ -112,7 +138,7 @@ export function HeroCarousel() {
 
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-12">
-          <div className="lg:w-1/2 space-y-5 text-center lg:text-left z-10">
+          <div className="lg:w-1/2 space-y-5 text-center lg:text-left z-10 min-h-[420px] lg:min-h-[460px]">
             {/* Badge */}
             <div className="inline-block bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full text-accent-orange font-bold text-sm shadow-sm border border-orange-100">
               {slide.badge}
@@ -138,7 +164,7 @@ export function HeroCarousel() {
             {/* Countdown */}
             <CountdownTimer />
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start min-h-[60px]">
               <Link
                 href={slide.ctaLink}
                 className="bg-accent-orange text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-105 transition-all active:scale-95 text-center"
@@ -149,36 +175,44 @@ export function HeroCarousel() {
                 href="/products?sort=sales"
                 className="bg-white text-gray-700 font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-md hover:bg-gray-50 transition-all border-2 border-gray-100 text-center"
               >
-                MAIS VENDIDOS
+                {cta2Text}
               </Link>
             </div>
 
             {/* Dots */}
-            <div className="flex gap-2 justify-center lg:justify-start pt-2">
+            <div className="flex gap-3 justify-center lg:justify-start pt-2">
               {slides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrent(i)}
-                  className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
-                    i === current
-                      ? "bg-accent-orange w-8"
-                      : "bg-gray-300 hover:bg-gray-400"
-                  }`}
+                  className="relative w-10 h-10 flex items-center justify-center cursor-pointer"
                   aria-label={`Slide ${i + 1}`}
-                />
+                >
+                  <span
+                    className={`block h-3 rounded-full transition-colors duration-300 ${
+                      i === current
+                        ? "bg-accent-orange w-8"
+                        : "bg-gray-300 hover:bg-gray-400 w-3"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Image */}
-          <div className="lg:w-1/2 relative">
+          {/* Image - fixed min-height to prevent CLS */}
+          <div className="lg:w-1/2 relative min-h-[350px] lg:min-h-[434px]">
             <div className="absolute inset-0 bg-gradient-to-tr from-baby-blue/30 to-baby-pink/30 rounded-full blur-3xl transform scale-90" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               key={`img-${current}`}
               src={slide.image}
-              alt="Bebe feliz"
+              alt={`${slide.title1} ${slide.title2}`}
+              width={650}
+              height={434}
+              fetchPriority={current === 0 ? "high" : "auto"}
+              decoding={current === 0 ? "sync" : "async"}
               className="relative z-10 rounded-[3rem] shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500 w-full max-w-md mx-auto animate-fade-in-up"
-              onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/800x800/FFE4E1/FF69B4?text=Fofurinhas+Baby"; }}
             />
 
             {/* Navigation arrows */}
@@ -205,9 +239,9 @@ export function HeroCarousel() {
                 ))}
               </div>
               <p className="text-xs font-bold text-gray-600 leading-tight">
-                &quot;Meu bebe dormiu em 5 minutos!&quot;
+                &quot;{testimonialText}&quot;
               </p>
-              <p className="text-[10px] text-gray-400 mt-1">- Mamae Julia</p>
+              <p className="text-[10px] text-gray-400 mt-1">- {testimonialAuthor}</p>
             </div>
           </div>
         </div>

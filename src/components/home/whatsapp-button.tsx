@@ -2,15 +2,21 @@
 
 import { MessageCircle } from "lucide-react";
 
-const WHATSAPP_NUMBER = "5511999999999"; // Alterar para o numero real
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Ola! Vi um produto na Fofurinhas Baby e gostaria de saber mais.",
-);
+interface WhatsAppButtonProps {
+  whatsappNumber?: string;
+  storeName?: string;
+}
 
-export function WhatsAppButton() {
+export function WhatsAppButton({ whatsappNumber, storeName }: WhatsAppButtonProps) {
+  const number = whatsappNumber || "5511999999999";
+  const name = storeName || "Fofurinhas Baby";
+  const message = encodeURIComponent(
+    `Ola! Vi um produto na ${name} e gostaria de saber mais.`,
+  );
+
   return (
     <a
-      href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
+      href={`https://wa.me/${number}?text=${message}`}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 hover:scale-110 transition-all group"

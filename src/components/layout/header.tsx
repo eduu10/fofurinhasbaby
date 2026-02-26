@@ -27,20 +27,24 @@ const navLinks = [
 interface HeaderProps {
   topBarText?: string;
   searchPlaceholder?: string;
+  storeName?: string;
+  storeLogo?: string;
 }
 
-export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
+export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [mounted, setMounted] = useState(false);
   const itemCount = useCartStore((state) => state.getItemCount());
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const initAuth = useAuthStore((state) => state.initAuth);
 
   useEffect(() => {
+    setMounted(true);
     initAuth();
   }, [initAuth]);
 
@@ -76,11 +80,16 @@ export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
-                <Star fill="currentColor" size={16} className="sm:w-5 sm:h-5" />
-              </div>
+              {storeLogo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={storeLogo} alt={storeName || "Fofurinhas Baby"} className="h-8 sm:h-10 w-auto object-contain flex-shrink-0" />
+              ) : (
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
+                  <Star fill="currentColor" size={16} className="sm:w-5 sm:h-5" />
+                </div>
+              )}
               <span className="font-display text-lg sm:text-2xl font-bold text-gradient-pink whitespace-nowrap">
-                Fofurinhas Baby
+                {storeName || "Fofurinhas Baby"}
               </span>
             </Link>
 
@@ -145,7 +154,7 @@ export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
               >
                 <div className="relative">
                   <ShoppingCart size={24} />
-                  {itemCount > 0 && (
+                  {mounted && itemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-accent-orange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                       {itemCount > 99 ? "99+" : itemCount}
                     </span>
@@ -234,6 +243,7 @@ export function Header({ topBarText, searchPlaceholder }: HeaderProps) {
                 <Link
                   href="/login"
                   className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-baby-pink"
+                  aria-label="Entrar na conta"
                 >
                   <User className="h-5 w-5" />
                   <span className="hidden sm:inline">Entrar</span>
