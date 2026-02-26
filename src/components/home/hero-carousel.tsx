@@ -212,6 +212,7 @@ export function HeroCarousel(props: HeroCarouselProps) {
               height={434}
               fetchPriority={current === 0 ? "high" : "auto"}
               decoding={current === 0 ? "sync" : "async"}
+              onError={(e) => { (e.target as HTMLImageElement).src = defaultSlides[0].image; }}
               className="relative z-10 rounded-[3rem] shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500 w-full max-w-md mx-auto animate-fade-in-up"
             />
 

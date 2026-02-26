@@ -25,7 +25,7 @@ const defaultSettings: Record<string, string> = {
   heroDescription: "Descubra nossa colecao exclusiva de produtos que transformam o dia a dia do seu bebe em momentos magicos.",
   heroCta1: "VER OFERTAS",
   heroCta2: "MAIS VENDIDOS",
-  heroImage: "https://images.unsplash.com/photo-1515488042361-ee0065ab4d8b?auto=format&fit=crop&q=80&w=800",
+  heroImage: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=75&w=650&fm=webp",
   heroTestimonial: "Meu bebe dormiu em 5 minutos!",
   heroTestimonialAuthor: "Mamae Julia",
   contactEmail: "contato@fofurinhasbaby.com.br",

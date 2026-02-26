@@ -82,15 +82,17 @@ export function Header({ topBarText, searchPlaceholder, storeName, storeLogo }: 
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               {storeLogo ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={storeLogo} alt={storeName || "Fofurinhas Baby"} className="h-8 sm:h-10 w-auto object-contain flex-shrink-0" />
+                <img src={storeLogo} alt={storeName || "Fofurinhas Baby"} className="h-10 sm:h-12 w-auto object-contain flex-shrink-0" />
               ) : (
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
-                  <Star fill="currentColor" size={16} className="sm:w-5 sm:h-5" />
-                </div>
+                <>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-baby-pink to-accent-orange rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0">
+                    <Star fill="currentColor" size={16} className="sm:w-5 sm:h-5" />
+                  </div>
+                  <span className="font-display text-lg sm:text-2xl font-bold text-gradient-pink whitespace-nowrap">
+                    {storeName || "Fofurinhas Baby"}
+                  </span>
+                </>
               )}
-              <span className="font-display text-lg sm:text-2xl font-bold text-gradient-pink whitespace-nowrap">
-                {storeName || "Fofurinhas Baby"}
-              </span>
             </Link>
 
             {/* Desktop Navigation */}
