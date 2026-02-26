@@ -32,16 +32,19 @@ export async function POST(request: NextRequest) {
 
     const ext = file.name.split(".").pop() || "jpg";
 
+    // Try Vercel Blob first
     const url = await uploadFileToStorage(file, ext);
 
-    if (!url) {
-      return NextResponse.json(
-        { success: false, error: "Storage nao configurado. Configure BLOB_READ_WRITE_TOKEN na Vercel." },
-        { status: 500 }
-      );
+    if (url) {
+      return NextResponse.json({ success: true, url });
     }
 
-    return NextResponse.json({ success: true, url });
+    // Fallback: convert to base64 data URL
+    const bytes = await file.arrayBuffer();
+    const base64 = Buffer.from(bytes).toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64}`;
+
+    return NextResponse.json({ success: true, url: dataUrl });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
