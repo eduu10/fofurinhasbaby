@@ -329,6 +329,32 @@ model StoreSetting {
   @@map("store_settings")
 }
 
+// ============ BLOG ============
+
+model BlogPost {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  excerpt         String
+  content         String   @db.Text
+  category        String
+  tags            String[] @default([])
+  coverImage      String?
+  author          String   @default("Equipe Fofurinhas Baby")
+  readTime        Int      @default(7)
+  metaTitle       String?
+  metaDescription String?
+  relatedProducts String[] @default([])
+  isPublished     Boolean  @default(true)
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublished])
+  @@map("blog_posts")
+}
+
 // ============ API USAGE (Rate Limiting Omkar) ============
 
 model ApiUsage {

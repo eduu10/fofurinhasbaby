@@ -19,6 +19,7 @@ import {
   X,
   Globe,
   Import,
+  FileText,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -36,6 +37,11 @@ const sidebarLinks = [
     href: "/admin/products/import",
     label: "Importar AliExpress",
     icon: Import,
+  },
+  {
+    href: "/admin/blog",
+    label: "Blog",
+    icon: FileText,
   },
   {
     href: "/admin/orders",
